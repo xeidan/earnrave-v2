@@ -1,0 +1,5 @@
+"use client";
+import { motion } from "framer-motion";
+import { products } from "@/config/products";
+import { useProduct } from "@/providers/ProductProvider";
+export default function ProductSwitcher(){const {product,setProduct}=useProduct();return <div className="flex items-center gap-1 rounded-2xl border border-white/[0.06] bg-[#0f1111] p-1">{products.map(item=>{const Icon=item.icon;const active=product===item.id;return <button key={item.id} onClick={()=>setProduct(item.id)} aria-pressed={active} className="relative flex h-11 items-center gap-2 rounded-xl px-4 text-sm transition-colors max-xl:px-3">{active&&<motion.span layoutId="product-pill" className="absolute inset-0 rounded-xl border border-white/[0.09] bg-[#1a1d1d]" transition={{type:"spring",stiffness:420,damping:32}}/>}<Icon size={17} className={`relative z-10 ${active?"text-[#00d2b1]":"text-neutral-500"}`}/><span className={`relative z-10 whitespace-nowrap ${active?"font-semibold text-white":"font-medium text-neutral-400 hover:text-white"}`}>{item.title}</span></button>})}</div>}
