@@ -14,12 +14,12 @@ export const navigation: Record<Product, ProductNavigation> = {
   analytics: {
     product: "AI-Analytics",
     items: [
-      { label: "Overview", href: "#analytics" },
-      { label: "Performance", href: "#performance" },
-      { label: "Trade Journal", href: "#journal" },
-      { label: "AI Review", href: "#feedback" },
+        { label: "Overview", href: "#analytics" },
+        { label: "Performance", href: "#performance" },
+        { label: "Trade Journal", href: "#journal" },
+        { label: "Insights", href: "#insights" },
     ],
-  },
+    },
 
   signals: {
     product: "Signals",

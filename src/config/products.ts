@@ -23,7 +23,7 @@ export const products: ProductConfig[] = [
     title: "AI-Analytics",
     label: "AI-Analytics",
     icon: Brain,
-    href: "#analytics",
+    href: "#/",
     description: "Understand your performance and identify your trading edge.",
   },
   {
