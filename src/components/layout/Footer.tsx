@@ -1,0 +1,109 @@
+import Image from "next/image";
+
+const productLinks = [
+  { label: "AI-Analytics", href: "/analytics" },
+  { label: "Signals", href: "/signals" },
+  { label: "Funding", href: "/funding" },
+  { label: "Insights", href: "/insights" },
+];
+
+const platformLinks = [
+  { label: "Features", href: "#features" },
+  { label: "Pricing", href: "#pricing" },
+];
+
+export default function Footer() {
+  return (
+    <footer className="border-t border-white/[0.06] bg-[#070909]">
+      <div className="mx-auto max-w-[1600px] px-5 py-16 md:px-8 md:py-20">
+
+        {/* Main Footer */}
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
+
+          {/* Brand */}
+          <div className="lg:col-span-2">
+            <a href="/" aria-label="EarnRave home">
+              <Image
+                src="/earnrave-logo.svg"
+                alt="EarnRave"
+                width={160}
+                height={40}
+              />
+            </a>
+
+            <p className="mt-5 max-w-sm text-sm leading-7 text-neutral-500">
+              Tools, insights and intelligence to help traders
+              make better decisions and build consistency.
+            </p>
+          </div>
+
+          {/* Products */}
+          <div>
+            <h3 className="mb-5 text-sm font-semibold text-white">
+              Products
+            </h3>
+
+            <ul className="space-y-4">
+              {productLinks.map((item) => (
+                <li key={item.label}>
+                  <a
+                    href={item.href}
+                    className="text-sm text-neutral-500 transition hover:text-white"
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Platform */}
+          <div>
+            <h3 className="mb-5 text-sm font-semibold text-white">
+              Platform
+            </h3>
+
+            <ul className="space-y-4">
+              {platformLinks.map((item) => (
+                <li key={item.label}>
+                  <a
+                    href={item.href}
+                    className="text-sm text-neutral-500 transition hover:text-white"
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="my-12 h-px bg-white/[0.06]" />
+
+        {/* Bottom Footer */}
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-neutral-600">
+            © {new Date().getFullYear()} EarnRave. All rights reserved.
+          </p>
+
+          <div className="flex items-center gap-6">
+            <a
+              href="/privacy"
+              className="text-xs text-neutral-600 transition hover:text-neutral-300"
+            >
+              Privacy
+            </a>
+
+            <a
+              href="/terms"
+              className="text-xs text-neutral-600 transition hover:text-neutral-300"
+            >
+              Terms
+            </a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}

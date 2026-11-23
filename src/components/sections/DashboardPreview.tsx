@@ -1,0 +1,293 @@
+"use client";
+
+import { motion } from "framer-motion";
+import {
+  ArrowUpRight,
+  CalendarDays,
+  ChevronDown,
+  CircleHelp,
+  MoreHorizontal,
+} from "lucide-react";
+
+// -----------------------------------------------------------------------------
+// Chart data
+// -----------------------------------------------------------------------------
+
+const points = [
+  0, 24, 16, 37, 28, 51, 40, 58, 46, 71, 62, 76, 67, 89, 81, 96, 92, 111,
+  102, 120, 113, 131, 125, 145, 139, 151, 148, 168, 160, 179, 171, 191, 186,
+  205, 198, 218, 212, 232, 228, 250, 244, 265, 259, 280, 276, 297, 290, 315,
+  307, 329, 323, 347, 339, 361, 355, 377,
+];
+
+// -----------------------------------------------------------------------------
+// Dashboard preview
+// -----------------------------------------------------------------------------
+
+export default function DashboardPreview() {
+  const curve = points
+    .map((value, index) => `${index * 11},${380 - value}`)
+    .join(" ");
+
+  const metrics = [
+    ["Net P&L", "+$2,840.50", "+8.42%"],
+    ["Win rate", "64.8%", "+3.2%"],
+    ["Profit factor", "1.82", "+0.18"],
+  ];
+
+  const trades = [
+    ["EURUSD", "BUY", "+$184.20", "Today, 10:42"],
+    ["XAUUSD", "SELL", "+$320.00", "Today, 09:18"],
+    ["GBPUSD", "BUY", "−$42.50", "Yesterday"],
+    ["NAS100", "BUY", "+$216.80", "Yesterday"],
+    ["EURJPY", "SELL", "+$98.40", "May 27"],
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.65, delay: 0.15 }}
+      className="relative mx-auto w-full max-w-[1040px]"
+    >
+      {/* Background Glow */}
+      <div className="absolute -inset-8 rounded-[40px] bg-[radial-gradient(ellipse,rgba(0,210,177,.12),transparent_65%)] blur-2xl" />
+
+      {/* Dashboard Container */}
+      <div className="relative overflow-hidden rounded-[24px] border border-white/[0.09] bg-[#0b0e0e] shadow-[0_40px_120px_rgba(0,0,0,.65)]">
+
+        {/* Header */}
+        <div className="flex h-14 items-center justify-between border-b border-white/[0.06] px-5">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-[#00d2b1]" />
+
+            <span className="text-sm font-semibold">
+              Performance overview
+            </span>
+
+            <span className="hidden rounded-md bg-white/[0.05] px-2 py-1 text-[10px] text-neutral-500 sm:inline">
+              DEMO WORKSPACE
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 text-xs text-neutral-500">
+            <CalendarDays size={14} />
+            Last 30 days
+            <ChevronDown size={13} />
+            <MoreHorizontal size={17} />
+          </div>
+        </div>
+
+        {/* Main Dashboard Grid */}
+        <div className="grid lg:grid-cols-[1.6fr_1fr]">
+
+          {/* Left Column: Analytics */}
+          <div className="border-b border-white/[0.06] p-5 lg:border-b-0 lg:border-r">
+
+            {/* KPI Cards */}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {metrics.map((metric) => (
+                <div
+                  key={metric[0]}
+                  className="rounded-xl border border-white/[0.055] bg-white/[0.018] p-3"
+                >
+                  <p className="text-xs text-neutral-500">
+                    {metric[0]}
+                  </p>
+
+                  <p className="mt-2 text-xl font-semibold tracking-tight">
+                    {metric[1]}
+                  </p>
+
+                  <p className="mt-1 flex items-center gap-1 text-[11px] text-[#00d2b1]">
+                    <ArrowUpRight size={12} />
+
+                    {metric[2]}
+
+                    <span className="text-neutral-600">
+                      vs previous
+                    </span>
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* Equity Curve Header */}
+            <div className="mt-5 flex items-center justify-between">
+              <div>
+                <p className="text-xs text-neutral-500">
+                  Equity curve
+                </p>
+
+                <p className="mt-1 text-lg font-semibold">
+                  $36,540.50
+                </p>
+              </div>
+
+              <button className="rounded-lg border border-white/[0.07] px-3 py-1.5 text-xs text-neutral-400">
+                Balance
+                <ChevronDown size={12} className="ml-1 inline" />
+              </button>
+            </div>
+
+            {/* Equity Chart */}
+            <div className="mt-3 h-[220px] rounded-xl bg-[linear-gradient(180deg,rgba(0,210,177,.045),transparent)]">
+              <svg
+                viewBox="0 0 640 400"
+                preserveAspectRatio="none"
+                className="h-full w-full"
+              >
+                <defs>
+                  <linearGradient
+                    id="equityFill"
+                    x1="0"
+                    x2="0"
+                    y1="0"
+                    y2="1"
+                  >
+                    <stop
+                      offset="0%"
+                      stopColor="#00d2b1"
+                      stopOpacity=".2"
+                    />
+
+                    <stop
+                      offset="100%"
+                      stopColor="#00d2b1"
+                      stopOpacity="0"
+                    />
+                  </linearGradient>
+                </defs>
+
+                {/* Grid Lines */}
+                {[70, 150, 230, 310].map((y) => (
+                  <line
+                    key={y}
+                    x1="0"
+                    x2="640"
+                    y1={y}
+                    y2={y}
+                    stroke="rgba(255,255,255,.06)"
+                    strokeDasharray="4 6"
+                  />
+                ))}
+
+                {/* Area Fill */}
+                <polygon
+                  points={`0,400 ${curve} 640,400`}
+                  fill="url(#equityFill)"
+                />
+
+                {/* Equity Line */}
+                <polyline
+                  points={curve}
+                  fill="none"
+                  stroke="#00d2b1"
+                  strokeWidth="3"
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
+
+            {/* Chart Dates */}
+            <div className="mt-3 flex justify-between text-[10px] text-neutral-600">
+              <span>May 01</span>
+              <span>May 08</span>
+              <span>May 15</span>
+              <span>May 22</span>
+              <span>May 30</span>
+            </div>
+          </div>
+
+          {/* Right Column: Recent Trades */}
+          <div className="p-5">
+
+            {/* Trades Header */}
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold">
+                Recent trades
+              </p>
+
+              <a
+                href="#journal"
+                className="text-xs text-neutral-500"
+              >
+                View journal
+                <ArrowUpRight size={12} className="inline" />
+              </a>
+            </div>
+
+            {/* Trade List */}
+            <div className="mt-4 space-y-2">
+              {trades.map((trade) => (
+                <div
+                  key={trade[0]}
+                  className="flex items-center justify-between rounded-xl border border-white/[0.045] bg-white/[0.015] px-3 py-3"
+                >
+                  <div className="flex items-center gap-3">
+
+                    {/* Symbol Icon */}
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.045] text-[10px] font-semibold">
+                      {trade[0].slice(0, 2)}
+                    </div>
+
+                    {/* Trade Details */}
+                    <div>
+                      <p className="text-xs font-medium">
+                        {trade[0]}
+
+                        <span className="ml-1 text-[9px] text-neutral-600">
+                          {trade[1]}
+                        </span>
+                      </p>
+
+                      <p className="mt-1 text-[10px] text-neutral-600">
+                        {trade[3]}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Trade P&L */}
+                  <span
+                    className={`text-xs font-semibold ${
+                      trade[2].startsWith("−")
+                        ? "text-rose-400"
+                        : "text-[#00d2b1]"
+                    }`}
+                  >
+                    {trade[2]}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Process Insight */}
+            <div className="mt-4 rounded-xl border border-[#00d2b1]/10 bg-[#00d2b1]/[0.035] p-3">
+              <p className="text-xs font-medium text-[#00d2b1]">
+                Process insight
+              </p>
+
+              <p className="mt-1 text-xs leading-5 text-neutral-400">
+                Your best sessions this month started after a defined
+                pre-market plan.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between border-t border-white/[0.06] px-5 py-3 text-[10px] text-neutral-600">
+          <span>
+            Illustrative workspace · Not live account data
+          </span>
+
+          <span className="flex items-center gap-1">
+            <CircleHelp size={12} />
+            Preview only
+          </span>
+        </div>
+      </div>
+  </motion.div>
+  );
+}
