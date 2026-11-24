@@ -740,7 +740,7 @@ useEffect(() => {
                   ease: [0.22, 1, 0.36, 1],
                 },
               }}
-              className="relative flex flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0C100F] shadow-[0_20px_80px_rgba(0,0,0,.25)]"
+              className="relative flex h-[620px] flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0C100F] shadow-[0_20px_80px_rgba(0,0,0,.25)]"
             >
               <BorderTrace />
 
@@ -767,11 +767,11 @@ useEffect(() => {
               </div>
 
               {/* CHAT CONTENT */}
-              <div className="flex min-h-[390px] flex-col px-5 py-5 sm:px-6">
+              <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-5 py-5 sm:px-6">
 
                 {/* MESSAGE VIEWPORT */}
                 <div
-                  className={`relative flex min-h-[320px] flex-1 ${
+                  className={`relative flex min-h-0 flex-1 ${
                     chatMessages.length > 0
                       ? "items-start justify-start"
                       : "items-center justify-center"
@@ -971,7 +971,7 @@ useEffect(() => {
                 )}
 
                 {/* DEMO DISCLAIMER */}
-                <p className="mt-3 shrink-0 text-center text-[10px] text-neutral-600">
+                <p className="mt-3 shrink-0 pb-1 text-center text-[10px] leading-5 text-neutral-600">
                   Illustrative demo · Sample trading data · Not connected to a live account
                 </p>
               </div>
