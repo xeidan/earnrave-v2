@@ -1,7 +1,7 @@
 
 "use client";
 
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowUpRight,
   ArrowRight,
@@ -15,7 +15,7 @@ import {
   TrendingDown,
   ChevronDown,
   Paperclip,
-
+  Plus,
 } from "lucide-react";
 
 import { useEffect, useRef, useState } from "react";
@@ -160,6 +160,74 @@ export default function Home() {
   "What are my biggest trading mistakes?",
 ];
 
+const faqCategories = ["All", "AI-Analytics", "Signals", "Funding", "Insights"] as const;
+
+const faqItems = [
+  {
+    id: "what-is-earnrave",
+    category: "AI-Analytics",
+    question: "What is EARNRAVE, and how does it improve trading performance?",
+    answer:
+      "EARNRAVE is a multi-asset performance analytics and trading workflow platform built around four measurable pillars: Edge, Risk, Discipline, and Feedback. Instead of stopping at surface-level win rates, it normalizes trades into R-multiples, highlights session and setup expectancy, and surfaces behavioral leaks like oversized losses or revenge entries.",
+    highlight: "Edge · Risk · Discipline · Feedback",
+  },
+  {
+    id: "markets-and-syncing",
+    category: "AI-Analytics",
+    question: "Which markets, brokers, and APIs are supported?",
+    answer:
+      "EARNRAVE is designed from the ground up for Forex, prop firms, crypto, stocks, and futures. You can start immediately via smart CSV imports and manual trade logging while automated read-only exchange and broker API syncing rolls out across major crypto venues and trading platforms.",
+    highlight: "Multi-asset + Read-only APIs",
+  },
+  {
+    id: "fund-safety",
+    category: "AI-Analytics",
+    question: "Does EARNRAVE ever hold funds or execute trades on my account?",
+    answer:
+      "Never. EARNRAVE is strictly non-custodial and analytical. Your capital stays with your chosen broker or exchange, and connected integrations use read-only permissions—meaning EARNRAVE cannot withdraw funds, transfer balances, or place unauthorized orders.",
+    highlight: "100% Non-custodial & read-only",
+  },
+  {
+    id: "how-signals-work",
+    category: "Signals",
+    question: "How are EARNRAVE Signals structured?",
+    answer:
+      "Every signal is framed around defined market context, entry zones, invalidation levels, and asymmetric risk-to-reward rather than hype. The goal is disciplined execution and position sizing—never blind copying without understanding risk.",
+  },
+  {
+    id: "prop-firm-funding",
+    category: "Funding",
+    question: "How does Funding help with prop firm evaluations?",
+    answer:
+      "Funding focuses on evaluation readiness, risk calibration, daily and max drawdown discipline, and structured trade execution aligned with prop firm rules—helping you protect your account parameters rather than over-leveraging to rush targets.",
+  },
+  {
+    id: "weekly-insights",
+    category: "Insights",
+    question: "What is included in Weekly Insights?",
+    answer:
+      "Insights delivers weekly macro context, key liquidity and price levels, and post-week breakdowns so you understand the market environment behind price action and build sharper independent decision-making over time.",
+  },
+  {
+    id: "getting-started",
+    category: "AI-Analytics",
+    question: "How do I get early access or ask a specific question?",
+    answer:
+      "You can request early access directly from the CTA on this page or reach out to our team via email for onboarding, broker/CSV questions, or partnership inquiries.",
+  },
+];
+
+const [activeFaqCategory, setActiveFaqCategory] =
+  useState<(typeof faqCategories)[number]>("All");
+const [openFaqId, setOpenFaqId] = useState<string | null>(faqItems[0].id);
+
+const filteredFaqItems =
+  activeFaqCategory === "All"
+    ? faqItems
+    : faqItems.filter((item) => item.category === activeFaqCategory);
+
+const [activeBrokerIndex, setActiveBrokerIndex] = useState<number | null>(null);
+
 const demoAnswers = [
   {
     title: "Your losses are concentrated in poor timing.",
@@ -197,8 +265,17 @@ const [chatMessages, setChatMessages] = useState<any[]>([]);
 const [isThinking, setIsThinking] = useState(false);
 const [visibleAssistantText, setVisibleAssistantText] = useState("");
 const [typedQuestion, setTypedQuestion] = useState("");
+const transitionCompletionRef = useRef<{ completed: number; resolve?: () => void }>({ completed: 0 });
+
+const markTransitionAnimationComplete = () => {
+  transitionCompletionRef.current.completed += 1;
+  if (transitionCompletionRef.current.completed >= 2) {
+    transitionCompletionRef.current.resolve?.();
+  }
+};
+
 const [demoPhase, setDemoPhase] = useState<
-  "idle" | "typing-question" | "submitted" | "thinking" | "typing-answer" | "complete"
+  "idle" | "typing-question" | "moving-question" | "submitted" | "thinking" | "typing-answer" | "complete"
 >("idle");
 
 useEffect(() => {
@@ -245,16 +322,25 @@ useEffect(() => {
     await wait(500);
     if (cancelled) return;
 
-    // SUBMIT QUESTION
+    // MOVE QUESTION TO TOP-RIGHT AND COMPOSER TO BOTTOM TOGETHER
+    transitionCompletionRef.current = { completed: 0 };
+    const transitionFinished = new Promise<void>((resolve) => {
+      transitionCompletionRef.current.resolve = resolve;
+    });
     setChatMessages([
       {
         type: "user",
         text: question,
       },
     ]);
+    setDemoPhase("moving-question");
+    setTypedQuestion("");
+
+    // WAIT FOR BOTH LAYOUT ANIMATIONS TO COMPLETE
+    await transitionFinished;
+    if (cancelled) return;
 
     setDemoPhase("submitted");
-    setTypedQuestion("");
 
     // THINKING
     await wait(1000);
@@ -612,473 +698,1125 @@ useEffect(() => {
           </div>
         </section>
 
-{/* AI INTELLIGENCE */}
-<section id="intelligence" className="px-5 py-20 sm:py-24">
-  <div className="mx-auto max-w-7xl">
-    <div className="grid items-start gap-12 lg:grid-cols-2">
+      {/* AI INTELLIGENCE */}
+      <section id="intelligence" className="px-5 py-20 sm:py-24">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid items-start gap-12 lg:grid-cols-2">
 
-      {/* LEFT CONTENT */}
-      <div>
-        <div className="flex items-center gap-2 text-[11px] font-medium tracking-[.16em] text-[#00D2B1]">
-          <Sparkles size={14} />
-          INTELLIGENCE THAT MATTERS
-        </div>
-
-        <h2 className="mt-5 text-3xl font-medium leading-tight tracking-[-.05em] sm:text-5xl">
-          Your AI trading analyst.
-          <br />
-          <span className="text-neutral-500">Not another chatbot.</span>
-        </h2>
-
-        <p className="mt-5 max-w-lg text-sm leading-7 text-neutral-400">
-          EARNRAVE looks beyond individual trades to identify patterns
-          across your performance, behavior and risk. Insights grounded in
-          your trading data—not generic advice.
-        </p>
-
-        <a
-          href="#ecosystem"
-          className="mt-7 inline-flex items-center gap-2 text-sm font-medium text-[#00D2B1] transition hover:text-white"
-        >
-          Explore the EARNRAVE ecosystem
-          <ArrowUpRight size={15} />
-        </a>
-      </div>
-
-      {/* AI DEMO CARD */}
-      <motion.div
-        layout
-        transition={{
-          layout: {
-            duration: 1.2,
-            ease: [0.22, 1, 0.36, 1],
-          },
-        }}
-        className="relative flex flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0C100F] shadow-[0_20px_80px_rgba(0,0,0,.25)]"
-      >
-        <BorderTrace />
-
-        {/* HEADER */}
-        <div className="flex shrink-0 items-center justify-between border-b border-white/[0.07] px-5 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#00D2B1]/15 bg-[#00D2B1]/[0.06]">
-              <Brain size={15} className="text-[#00D2B1]" />
-            </div>
-
+            {/* LEFT CONTENT */}
             <div>
-              <p className="text-xs font-medium text-white">
-                EARNRAVE AI
+              <div className="flex items-center gap-2 text-[11px] font-medium tracking-[.16em] text-[#00D2B1]">
+                <Sparkles size={14} />
+                INTELLIGENCE THAT MATTERS
+              </div>
+
+              <h2 className="mt-5 text-3xl font-medium leading-tight tracking-[-.05em] sm:text-5xl">
+                Your AI trading analyst.
+                <br />
+                <span className="text-neutral-500">Not another chatbot.</span>
+              </h2>
+
+              <p className="mt-5 max-w-lg text-sm leading-7 text-neutral-400">
+                EARNRAVE looks beyond individual trades to identify patterns
+                across your performance, behavior and risk. Insights grounded in
+                your trading data—not generic advice.
               </p>
 
-              <div className="mt-1 flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#00D2B1]" />
-                <p className="text-[10px] text-neutral-500">
-                  Trading intelligence
-                </p>
-              </div>
+              <a
+                href="#ecosystem"
+                className="mt-7 inline-flex items-center gap-2 text-sm font-medium text-[#00D2B1] transition hover:text-white"
+              >
+                Explore the EARNRAVE ecosystem
+                <ArrowUpRight size={15} />
+              </a>
             </div>
-          </div>
-        </div>
 
-        {/* CHAT CONTENT */}
-        <div className="flex min-h-[390px] flex-col px-5 py-5 sm:px-6">
-
-          {/* MESSAGE VIEWPORT */}
-          <div className="relative flex min-h-[320px] flex-1 items-center justify-center">
-
-            {chatMessages.length === 0 ? (
-              <div className="flex w-full items-center justify-center">
-
-                {/* EMPTY STATE */}
-                {demoPhase === "idle" && (
-                  <motion.div
-                    key="empty-state"
-                    initial={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex items-center justify-center gap-2"
-                  >
-                    <Sparkles size={14} className="text-[#00D2B1]" />
-                    <p className="text-xs text-neutral-500">
-                      Ask anything about your performance
-                    </p>
-                  </motion.div>
-                )}
-
-                {/* CENTERED QUESTION COMPOSER */}
-                {demoPhase === "typing-question" && (
-                  <motion.div
-                    layoutId="demo-composer"
-                    transition={{
-                      layout: {
-                        duration: 1.2,
-                        ease: [0.22, 1, 0.36, 1],
-                      },
-                    }}
-                    className="w-full"
-                  >
-                    <div className="flex items-center gap-3 rounded-2xl border border-[#00D2B1]/20 bg-[#111315] px-4 py-4 shadow-[0_0_30px_rgba(0,210,177,.04)]">
-                      <Paperclip
-                        size={17}
-                        className="shrink-0 text-white/30"
-                      />
-
-                      <div className="min-h-[24px] flex-1 text-sm text-neutral-200">
-                        <span>{typedQuestion}</span>
-
-                        <span className="ml-0.5 inline-block h-4 w-[2px] animate-pulse bg-[#00D2B1]" />
-                      </div>
-
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#00D2B1]/10">
-                        <Sparkles size={16} className="text-[#00D2B1]" />
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
-              </div>
-            ) : (
-              <div className="flex w-full flex-col gap-5">
-
-                {chatMessages.map((message, index) => (
-                  <div key={index}>
-                    {message.type === "user" ? (
-                      <div className="flex justify-end self-start">
-                        <div className="max-w-[85%] rounded-2xl rounded-br-md border border-[#00D2B1]/10 bg-[#00D2B1]/[0.06] px-4 py-3">
-                        <p className="text-sm leading-6 text-neutral-200">
-                          {message.text}
-                        </p>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-start gap-3">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#00D2B1]/15 bg-[#00D2B1]/[0.05]">
-                          <Sparkles size={13} className="text-[#00D2B1]" />
-                        </div>
-
-                        <div className="min-w-0 flex-1">
-                          <p className="mb-2 text-[10px] font-medium tracking-wide text-[#00D2B1]">
-                            EARNRAVE ANALYSIS
-                          </p>
-
-                          <h3 className="text-sm font-medium leading-6 text-white">
-                            {message.answer.title}
-                          </h3>
-
-                          <p className="mt-2 text-xs leading-6 text-neutral-400">
-                            {visibleAssistantText}
-                            {visibleAssistantText.length <
-                              message.answer.body.length && (
-                              <span className="ml-0.5 inline-block h-3 w-1 animate-pulse bg-[#00D2B1]" />
-                            )}
-                          </p>
-
-                          {visibleAssistantText.length >=
-                            message.answer.body.length && (
-                            <>
-                              {/* METRICS */}
-                              <div className="mt-4 grid grid-cols-2 gap-2">
-                                {message.answer.metrics.map(
-                                  ([label, value]: [string, string]) => (
-                                    <div
-                                      key={label}
-                                      className="rounded-xl border border-white/[0.06] bg-white/[0.015] p-3"
-                                    >
-                                      <p className="text-[10px] text-neutral-600">
-                                        {label}
-                                      </p>
-
-                                      <p className="mt-1.5 text-xs font-medium text-neutral-300">
-                                        {value}
-                                      </p>
-                                    </div>
-                                  ),
-                                )}
-                              </div>
-
-                              {/* RECOMMENDATION */}
-                              <div className="mt-3 rounded-xl border border-[#00D2B1]/10 bg-[#00D2B1]/[0.025] p-3.5">
-                                <p className="mb-1 text-[10px] font-medium text-[#00D2B1]">
-                                  SUGGESTED FOCUS
-                                </p>
-
-                                <p className="text-xs leading-6 text-neutral-400">
-                                  {message.answer.recommendation}
-                                </p>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-
-                {/* THINKING INDICATOR */}
-                {isThinking && (
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#00D2B1]/15 bg-[#00D2B1]/[0.05]">
-                      <Sparkles size={13} className="text-[#00D2B1]" />
-                    </div>
-
-                    <div className="flex items-center gap-1.5 rounded-xl border border-white/[0.05] bg-white/[0.02] px-3 py-3">
-                      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#00D2B1]/70 [animation-delay:-0.2s]" />
-                      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#00D2B1]/70 [animation-delay:-0.1s]" />
-                      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#00D2B1]/70" />
-                    </div>
-                  </div>
-                )}
-
-              </div>
-            )}
-
-          </div>
-
-          {/* CHAT COMPOSER */}
-          {demoPhase === "typing-question" ? (
-            <div className="mt-5 h-[58px] shrink-0" />
-          ) : demoPhase === "idle" ? (
-            <div className="mt-5 flex shrink-0 items-center gap-3 rounded-2xl border border-white/[0.08] bg-[#111315] px-4 py-3.5">
-              <Paperclip
-                size={17}
-                className="shrink-0 text-white/30"
-              />
-
-              <div className="flex-1 select-none text-sm text-white/30">
-                Ask Earnrave anything...
-              </div>
-
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#00D2B1]/10">
-                <Sparkles size={16} className="text-[#00D2B1]" />
-              </div>
-            </div>
-          ) : (
+            {/* AI DEMO CARD */}
             <motion.div
-              layoutId="demo-composer"
+              layout
               transition={{
                 layout: {
                   duration: 1.2,
                   ease: [0.22, 1, 0.36, 1],
                 },
               }}
-              className="mt-5 flex shrink-0 items-center gap-3 rounded-2xl border border-white/[0.08] bg-[#111315] px-4 py-3.5"
+              className="relative flex flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0C100F] shadow-[0_20px_80px_rgba(0,0,0,.25)]"
             >
-              <Paperclip
-                size={17}
-                className="shrink-0 text-white/30"
-              />
+              <BorderTrace />
 
-              <div className="flex-1 select-none text-sm text-white/30">
-                Ask Earnrave anything...
+              {/* HEADER */}
+              <div className="flex shrink-0 items-center justify-between border-b border-white/[0.07] px-5 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#00D2B1]/15 bg-[#00D2B1]/[0.06]">
+                    <Brain size={15} className="text-[#00D2B1]" />
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-medium text-white">
+                      EARNRAVE AI
+                    </p>
+
+                    <div className="mt-1 flex items-center gap-1.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#00D2B1]" />
+                      <p className="text-[10px] text-neutral-500">
+                        Trading intelligence
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#00D2B1]/10">
-                <Sparkles size={16} className="text-[#00D2B1]" />
+              {/* CHAT CONTENT */}
+              <div className="flex min-h-[390px] flex-col px-5 py-5 sm:px-6">
+
+                {/* MESSAGE VIEWPORT */}
+                <div
+                  className={`relative flex min-h-[320px] flex-1 ${
+                    chatMessages.length > 0
+                      ? "items-start justify-start"
+                      : "items-center justify-center"
+                  }`}
+                >
+
+                  {chatMessages.length === 0 ? (
+                    <div className="flex w-full items-center justify-center">
+
+                      {/* EMPTY STATE */}
+                      {demoPhase === "idle" && (
+                        <motion.div
+                          key="empty-state"
+                          initial={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="flex items-center justify-center gap-2"
+                        >
+                          <Sparkles size={14} className="text-[#00D2B1]" />
+                          <p className="text-xs text-neutral-500">
+                            Ask anything about your performance
+                          </p>
+                        </motion.div>
+                      )}
+
+                      {/* CENTERED QUESTION COMPOSER */}
+                      {demoPhase === "typing-question" && (
+                        <motion.div
+                          layoutId="demo-composer"
+                          transition={{
+                            layout: {
+                              duration: 1.2,
+                              ease: [0.22, 1, 0.36, 1],
+                            },
+                          }}
+                          className="w-full"
+                        >
+                          <div className="flex items-center gap-3 rounded-2xl border border-[#00D2B1]/20 bg-[#111315] px-4 py-4 shadow-[0_0_30px_rgba(0,210,177,.04)]">
+                            <Paperclip
+                              size={17}
+                              className="shrink-0 text-white/30"
+                            />
+
+                            <div className="min-h-[24px] flex-1 text-sm text-neutral-200">
+                              <motion.span layoutId="demo-question">{typedQuestion}</motion.span>
+
+                              <span className="ml-0.5 inline-block h-4 w-[2px] animate-pulse bg-[#00D2B1]" />
+                            </div>
+
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#00D2B1]/10">
+                              <Sparkles size={16} className="text-[#00D2B1]" />
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+
+                    </div>
+                  ) : (
+                    <div className="flex w-full flex-col gap-5">
+
+                      {chatMessages.map((message, index) => (
+                        <div key={index}>
+                          {message.type === "user" ? (
+                            <div className="flex justify-end self-start">
+                              <motion.div layoutId="demo-question" onLayoutAnimationComplete={markTransitionAnimationComplete} className="max-w-[85%] rounded-2xl rounded-br-md border border-[#00D2B1]/10 bg-[#00D2B1]/[0.06] px-4 py-3">
+                              <p className="text-sm leading-6 text-neutral-200">
+                                {message.text}
+                              </p>
+                              </motion.div>
+                            </div>
+                          ) : (
+                            <div className="flex items-start gap-3">
+                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#00D2B1]/15 bg-[#00D2B1]/[0.05]">
+                                <Sparkles size={13} className="text-[#00D2B1]" />
+                              </div>
+
+                              <div className="min-w-0 flex-1">
+                                <p className="mb-2 text-[10px] font-medium tracking-wide text-[#00D2B1]">
+                                  EARNRAVE ANALYSIS
+                                </p>
+
+                                <h3 className="text-sm font-medium leading-6 text-white">
+                                  {message.answer.title}
+                                </h3>
+
+                                <p className="mt-2 text-xs leading-6 text-neutral-400">
+                                  {visibleAssistantText}
+                                  {visibleAssistantText.length <
+                                    message.answer.body.length && (
+                                    <span className="ml-0.5 inline-block h-3 w-1 animate-pulse bg-[#00D2B1]" />
+                                  )}
+                                </p>
+
+                                {visibleAssistantText.length >=
+                                  message.answer.body.length && (
+                                  <>
+                                    {/* METRICS */}
+                                    <div className="mt-4 grid grid-cols-2 gap-2">
+                                      {message.answer.metrics.map(
+                                        ([label, value]: [string, string]) => (
+                                          <div
+                                            key={label}
+                                            className="rounded-xl border border-white/[0.06] bg-white/[0.015] p-3"
+                                          >
+                                            <p className="text-[10px] text-neutral-600">
+                                              {label}
+                                            </p>
+
+                                            <p className="mt-1.5 text-xs font-medium text-neutral-300">
+                                              {value}
+                                            </p>
+                                          </div>
+                                        ),
+                                      )}
+                                    </div>
+
+                                    {/* RECOMMENDATION */}
+                                    <div className="mt-3 rounded-xl border border-[#00D2B1]/10 bg-[#00D2B1]/[0.025] p-3.5">
+                                      <p className="mb-1 text-[10px] font-medium text-[#00D2B1]">
+                                        SUGGESTED FOCUS
+                                      </p>
+
+                                      <p className="text-xs leading-6 text-neutral-400">
+                                        {message.answer.recommendation}
+                                      </p>
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+
+                      {/* THINKING INDICATOR */}
+                      {isThinking && (
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#00D2B1]/15 bg-[#00D2B1]/[0.05]">
+                            <Sparkles size={13} className="text-[#00D2B1]" />
+                          </div>
+
+                          <div className="flex items-center gap-1.5 rounded-xl border border-white/[0.05] bg-white/[0.02] px-3 py-3">
+                            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#00D2B1]/70 [animation-delay:-0.2s]" />
+                            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#00D2B1]/70 [animation-delay:-0.1s]" />
+                            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#00D2B1]/70" />
+                          </div>
+                        </div>
+                      )}
+
+                    </div>
+                  )}
+
+                </div>
+
+                {/* CHAT COMPOSER */}
+                {demoPhase === "typing-question" ? (
+                  <div className="mt-5 h-[58px] shrink-0" />
+                ) : demoPhase === "idle" ? (
+                  <div className="mt-5 flex shrink-0 items-center gap-3 rounded-2xl border border-white/[0.08] bg-[#111315] px-4 py-3.5">
+                    <Paperclip
+                      size={17}
+                      className="shrink-0 text-white/30"
+                    />
+
+                    <div className="flex-1 select-none text-sm text-white/30">
+                      Ask Earnrave anything...
+                    </div>
+
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#00D2B1]/10">
+                      <Sparkles size={16} className="text-[#00D2B1]" />
+                    </div>
+                  </div>
+                ) : (
+                  <motion.div
+                    layoutId="demo-composer"
+                    onLayoutAnimationComplete={markTransitionAnimationComplete}
+                    transition={{
+                      layout: {
+                        duration: 1.2,
+                        ease: [0.22, 1, 0.36, 1],
+                      },
+                    }}
+                    className="mt-5 flex shrink-0 items-center gap-3 rounded-2xl border border-white/[0.08] bg-[#111315] px-4 py-3.5"
+                  >
+                    <Paperclip
+                      size={17}
+                      className="shrink-0 text-white/30"
+                    />
+
+                    <div className="flex-1 select-none text-sm text-white/30">
+                      Ask Earnrave anything...
+                    </div>
+
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#00D2B1]/10">
+                      <Sparkles size={16} className="text-[#00D2B1]" />
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* DEMO DISCLAIMER */}
+                <p className="mt-3 shrink-0 text-center text-[10px] text-neutral-600">
+                  Illustrative demo · Sample trading data · Not connected to a live account
+                </p>
               </div>
             </motion.div>
-          )}
 
-          {/* DEMO DISCLAIMER */}
-          <p className="mt-3 shrink-0 text-center text-[10px] text-neutral-600">
-            Illustrative demo · Sample trading data · Not connected to a live account
-          </p>
+          </div>
         </div>
-      </motion.div>
+      </section>
 
-    </div>
-  </div>
-</section>
-
-       {/* PRODUCT VALUE */}
-      <section className="border-y border-white/[0.06] bg-[#0A0D0D] px-5 py-20 sm:py-24">
+      {/* BROKER CONNECTION ECOSYSTEM */}
+      <section className="relative overflow-hidden border-y border-white/[0.05] bg-[#080A0A] px-5 py-24 sm:py-28">
         <div className="mx-auto max-w-7xl">
-          <div className="grid gap-12 lg:grid-cols-[.85fr_1.15fr]">
-            <div>
-              <p className="text-[11px] font-medium tracking-[.18em] text-[#00D2B1]">
-                MORE THAN A JOURNAL
-              </p>
 
-              <h2 className="mt-5 text-3xl font-medium leading-tight tracking-[-.05em] sm:text-5xl">
-                Numbers tell you what happened.
-                <span className="text-neutral-500">
-                  {" "}We help you understand why.
-                </span>
-              </h2>
+          {/* INTRO */}
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-[11px] font-medium tracking-[.2em] text-[#00D2B1]">
+              CONNECT YOUR TRADING ACCOUNTS
+            </p>
 
-              <p className="mt-5 max-w-lg text-sm leading-7 text-neutral-400">
-                Most traders track their results. Few understand the behaviors,
-                conditions and decisions behind them. EARNRAVE connects your data
-                to actionable insights.
-              </p>
-            </div>
+            <h2 className="mt-5 text-3xl font-medium leading-[1.1] tracking-[-.055em] text-white sm:text-5xl lg:text-6xl">
+              Your trades.
+              <span className="text-neutral-500"> One connected view.</span>
+            </h2>
 
-            <div className="grid gap-3 sm:grid-cols-2">
+            <p className="mx-auto mt-6 max-w-2xl text-sm leading-7 text-neutral-400 sm:text-base sm:leading-8">
+              Connect your brokers, exchanges and trading platforms. Bring your
+              trading history together into one place. No fragmented data.
+              No manual tracking.
+            </p>
+          </div>
+
+          {/* PLATFORM ECOSYSTEM */}
+          <div className="relative mx-auto mt-16 max-w-6xl sm:mt-20">
+
+      {/* BROKER LOGOS */}
+            <div className="relative z-10 grid grid-cols-3 gap-x-5 gap-y-8 sm:grid-cols-6 sm:gap-x-8 sm:gap-y-10 lg:grid-cols-12 lg:gap-x-4">
               {[
-                {
-                  icon: Target,
-                  label: "EDGE",
-                  title: "Identify your strengths",
-                  body: "Discover the markets, sessions and setups that produce your best results.",
-                },
-                {
-                  icon: ShieldCheck,
-                  label: "RISK",
-                  title: "See risk clearly",
-                  body: "Understand your exposure, drawdown patterns and risk consistency.",
-                },
-                {
-                  icon: Activity,
-                  label: "DISCIPLINE",
-                  title: "Expose behavior",
-                  body: "Find emotional decisions, rule violations and patterns that cost you.",
-                },
-                {
-                  icon: Brain,
-                  label: "FEEDBACK",
-                  title: "Get actionable feedback",
-                  body: "Convert your trading history into specific areas for improvement.",
-                },
-              ].map((item) => {
-                const Icon = item.icon;
+                { name: "Binance", slug: "binance", color: "F0B90B", category: "Crypto" },
+                { name: "OKX", slug: "okx", color: "FFFFFF", category: "Crypto" },
+                { name: "Bybit", slug: "bybit", color: "F7A600", category: "Crypto" },
+                { name: "Coinbase", slug: "coinbase", color: "0052FF", category: "Crypto" },
+                { name: "Kraken", slug: "kraken", color: "5741D9", category: "Crypto" },
+                { name: "Bitget", slug: "bitget", color: "00F0FF", category: "Crypto" },
+                { name: "KuCoin", slug: "kucoin", color: "23AF91", category: "Crypto" },
+                { name: "MEXC", slug: "mexc", color: "00B897", category: "Crypto" },
+                { name: "Gate.io", slug: "gateio", color: "E60023", category: "Crypto" },
+                { name: "Hyperliquid", slug: "hyperliquid", color: "00D2B1", category: "Crypto" },
+                { name: "MetaTrader 5", slug: "metatrader5", color: "00A95C", category: "Forex" },
+                { name: "cTrader", slug: "ctrader", color: "3C8DBC", category: "Forex" },
+              ].map((broker, idx) => {
+                const isActive = idx === activeBrokerIndex;
 
                 return (
-                  <div
-                    key={item.label}
-                    className="rounded-2xl border border-white/[0.07] bg-[#0D1110] p-5 transition-all duration-200 hover:border-[#00D2B1]/25 hover:bg-[#101513]"
+                  <button
+                    key={broker.name}
+                    type="button"
+                    onMouseEnter={() => setActiveBrokerIndex(idx)}
+                    onMouseLeave={() => setActiveBrokerIndex(null)}
+                    onClick={() =>
+                      setActiveBrokerIndex((prev) => (prev === idx ? null : idx))
+                    }
+                    className="group flex flex-col items-center gap-3 focus:outline-none"
                   >
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#00D2B1]/10 bg-[#00D2B1]/[0.05]">
-                      <Icon
-                        size={17}
-                        strokeWidth={1.6}
-                        className="text-[#00D2B1]"
+                    <div
+                      className={`relative flex h-12 w-12 items-center justify-center rounded-xl border transition-all duration-300 sm:h-14 sm:w-14 ${
+                        isActive
+                          ? "border-[#00D2B1]/40 bg-[#111616] shadow-[0_0_20px_rgba(0,210,177,0.12)]"
+                          : "border-white/[0.055] bg-[#0D1010] group-hover:border-white/[0.12] group-hover:bg-[#111414]"
+                      }`}
+                    >
+                      <span className="text-[10px] font-medium text-neutral-500">
+                        {broker.name.slice(0, 2).toUpperCase()}
+                      </span>
+
+                      <img
+                        src={`https://cdn.simpleicons.org/${broker.slug}/${broker.color}`}
+                        alt={broker.name}
+                        className="absolute inset-0 h-full w-full object-contain p-3"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                        }}
                       />
                     </div>
 
-                    <p className="mt-5 text-[10px] tracking-[.16em] text-neutral-600">
-                      {item.label}
-                    </p>
-
-                    <h3 className="mt-2 text-base font-medium text-white">
-                      {item.title}
-                    </h3>
-
-                    <p className="mt-2 text-xs leading-6 text-neutral-500">
-                      {item.body}
-                    </p>
-                  </div>
+                    <span
+                      className={`text-center text-[10px] transition-colors duration-200 sm:text-xs ${
+                        isActive
+                          ? "font-medium text-white"
+                          : "text-neutral-500 group-hover:text-neutral-300"
+                      }`}
+                    >
+                      {broker.name}
+                    </span>
+                  </button>
                 );
               })}
+            </div>
+
+      {/* CIRCUIT-BUS DATA PATHWAYS — DESKTOP */}
+            <div className="relative mx-auto hidden h-[112px] w-full max-w-[1152px] lg:block">
+              <svg
+                viewBox="0 0 1152 112"
+                fill="none"
+                className="h-full w-full overflow-visible"
+              >
+                <defs>
+                  <linearGradient
+                    id="busLineGradient"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="112"
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.04" />
+                    <stop offset="50%" stopColor="#FFFFFF" stopOpacity="0.12" />
+                    <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.06" />
+                  </linearGradient>
+
+                  <linearGradient
+                    id="activeBusGradient"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="112"
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop offset="0%" stopColor="#00D2B1" stopOpacity="0.35" />
+                    <stop offset="55%" stopColor="#00D2B1" stopOpacity="0.8" />
+                    <stop offset="100%" stopColor="#00D2B1" stopOpacity="0.95" />
+                  </linearGradient>
+                </defs>
+
+                {(() => {
+                  const centerX = 576;
+                  const busY = 54;
+                  const radius = 14;
+
+                  const getPath = (i: number) => {
+                    const startX = 40.67 + i * 97.33;
+                    const dx = centerX - startX;
+                    const absDx = Math.abs(dx);
+
+                    if (absDx < 1) {
+                      return `M ${centerX} 0 L ${centerX} 112`;
+                    }
+
+                    const dir = dx > 0 ? 1 : -1;
+                    const r = Math.min(radius, absDx / 2);
+
+                    return [
+                      `M ${startX} 0`,
+                      `L ${startX} ${busY - r}`,
+                      `Q ${startX} ${busY}, ${startX + dir * r} ${busY}`,
+                      `L ${centerX - dir * r} ${busY}`,
+                      `Q ${centerX} ${busY}, ${centerX} ${busY + r}`,
+                      `L ${centerX} 112`,
+                    ].join(" ");
+                  };
+
+                  return (
+                    <>
+                      {Array.from({ length: 12 }).map((_, i) => {
+                        if (i === activeBrokerIndex) return null;
+                        return (
+                          <path
+                            key={i}
+                            d={getPath(i)}
+                            stroke="url(#busLineGradient)"
+                            strokeWidth="1"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        );
+                      })}
+
+                      {activeBrokerIndex !== null && (
+                        <path
+                          d={getPath(activeBrokerIndex)}
+                          stroke="url(#activeBusGradient)"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      )}
+                    </>
+                  );
+                })()}
+              </svg>
+            </div>
+
+            {/* MOBILE SPACING — NO CONNECTOR GRAPHIC */}
+            <div className="h-12 sm:h-16 lg:hidden" />
+
+            {/* CONNECTED WORKSPACE */}
+            <div className="relative overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0B0E0E] sm:rounded-3xl">
+
+              {/* Fine top accent */}
+              <div className="absolute left-1/2 top-0 h-px w-1/3 -translate-x-1/2 bg-gradient-to-r from-transparent via-[#00D2B1]/25 to-transparent" />
+
+              {/* Ambient background */}
+              <div className="pointer-events-none absolute right-0 top-0 h-80 w-80 rounded-full bg-[#00D2B1]/[0.025] blur-[100px]" />
+
+              <div className="grid lg:grid-cols-2">
+
+                {/* LEFT SIDE */}
+                <div className="relative flex flex-col justify-center px-7 py-10 sm:px-12 sm:py-14 lg:px-16 lg:py-20">
+
+                  <div className="flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#00D2B1]" />
+                    <span className="text-[10px] tracking-[.16em] text-neutral-600">
+                      UNIFIED TRADING DATA
+                    </span>
+                  </div>
+
+                  <h3 className="mt-6 text-2xl font-medium leading-tight tracking-[-.045em] text-white sm:text-4xl">
+                    Every account.
+                    <span className="block text-neutral-500">
+                      Every trade. Together.
+                    </span>
+                  </h3>
+
+                  <p className="mt-5 max-w-md text-sm leading-7 text-neutral-400">
+                    Your accounts stay where they are. EARNRAVE brings your
+                    trading history into one unified view so you can analyze
+                    performance across platforms.
+                  </p>
+
+                  <div className="mt-8 flex items-center gap-2.5">
+                    <ShieldCheck
+                      size={16}
+                      strokeWidth={1.6}
+                      className="text-neutral-500"
+                    />
+                    <span className="text-xs text-neutral-500">
+                      Secure, read-only data access
+                    </span>
+                  </div>
+                </div>
+
+                {/* RIGHT SIDE — CONNECTION MANAGER */}
+                <div className="relative flex items-center justify-center px-5 pb-7 sm:px-8 sm:pb-10 lg:p-10">
+
+                  <div className="w-full max-w-[430px] rounded-2xl border border-white/[0.055] bg-[#111414] p-5 sm:p-6">
+
+                    {/* MANAGER HEADER */}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-sm font-medium text-neutral-200">
+                          Connection Manager
+                        </h4>
+                        <p className="mt-1 text-xs text-neutral-600">
+                          Your trading accounts
+                        </p>
+                      </div>
+
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.055] bg-white/[0.02]">
+                        <Activity
+                          size={15}
+                          strokeWidth={1.5}
+                          className="text-neutral-500"
+                        />
+                      </div>
+                    </div>
+
+                    {/* PORTFOLIO GROUP */}
+                    <div className="mt-7">
+                      <p className="mb-3 text-[10px] tracking-[.12em] text-neutral-600">
+                        PORTFOLIOS
+                      </p>
+
+      {/* CRYPTO */}
+                      <div
+                        className={`flex items-center gap-3 rounded-xl px-3 py-3 transition-colors ${
+                          activeBrokerIndex < 10 ? "bg-white/[0.03]" : "hover:bg-white/[0.02]"
+                        }`}
+                      >
+                        <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.04] bg-[#0B0D0D]">
+                          <img
+                            src="https://cdn.simpleicons.org/binance/F0B90B"
+                            alt="Crypto"
+                            className="h-4 w-4 object-contain"
+                          />
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-medium text-neutral-300">
+                            Crypto
+                          </p>
+                          <p className="mt-1 text-[10px] text-neutral-600">
+                            Binance · Bybit · OKX
+                          </p>
+                        </div>
+
+                        <span
+                          className={`text-[10px] ${
+                            activeBrokerIndex < 10 ? "text-[#00D2B1]" : "text-neutral-500"
+                          }`}
+                        >
+                          Connected
+                        </span>
+                      </div>
+
+                      {/* FOREX */}
+                      <div
+                        className={`flex items-center gap-3 rounded-xl px-3 py-3 transition-colors ${
+                          activeBrokerIndex >= 10 ? "bg-white/[0.03]" : "hover:bg-white/[0.02]"
+                        }`}
+                      >
+                        <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.04] bg-[#0B0D0D]">
+                          <img
+                            src="https://cdn.simpleicons.org/metatrader5/00A95C"
+                            alt="Forex"
+                            className="h-4 w-4 object-contain"
+                          />
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-medium text-neutral-300">
+                            Forex
+                          </p>
+                          <p className="mt-1 text-[10px] text-neutral-600">
+                            MT5 · cTrader
+                          </p>
+                        </div>
+
+                        <span
+                          className={`text-[10px] ${
+                            activeBrokerIndex >= 10 ? "text-[#00D2B1]" : "text-neutral-500"
+                          }`}
+                        >
+                          Connected
+                        </span>
+                      </div>
+
+                      {/* ADD ACCOUNT */}
+                      <div className="mt-3 flex items-center justify-center gap-2 rounded-xl border border-dashed border-white/[0.07] py-3.5 text-neutral-500 transition-colors hover:border-[#00D2B1]/20 hover:text-neutral-300">
+                        <span className="text-base leading-none">+</span>
+                        <span className="text-xs">Connect account</span>
+                      </div>
+                    </div>
+
+                    {/* SECURITY */}
+                    <div className="mt-5 border-t border-white/[0.04] pt-4">
+                      <div className="flex items-start gap-2.5">
+                        <ShieldCheck
+                          size={14}
+                          strokeWidth={1.6}
+                          className="mt-0.5 shrink-0 text-neutral-600"
+                        />
+                        <p className="text-[10px] leading-5 text-neutral-600">
+                          Your accounts remain yours. EARNRAVE accesses trading
+                          data without controlling your funds.
+                        </p>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
       </section>
 
 
-{/* ECOSYSTEM */}
-<section id="ecosystem"  className="border-y border-white/[0.06] bg-[#0A0D0D] px-5 py-20 sm:py-24">
+{/* WHY EARNRAVE */}
+<section
+  id="ecosystem"
+  className="relative overflow-hidden border-y border-white/[0.06] bg-[#080A0A] px-5 py-24 sm:py-32"
+>
   <div className="mx-auto max-w-7xl">
-    <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+    {/* HEADER */}
+    <div className="grid gap-8 lg:grid-cols-[1.15fr_.85fr] lg:items-end">
       <div>
-        <p className="text-[11px] font-medium tracking-[.18em] text-[#00D2B1]">
-          THE EARNRAVE ECOSYSTEM
-        </p>
+        <div className="flex items-center gap-2 text-[11px] font-medium tracking-[.2em] text-[#00D2B1]">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#00D2B1]" />
+          WHY EARNRAVE
+        </div>
 
-        <h2 className="mt-4 text-3xl font-medium tracking-[-.05em] sm:text-5xl">
-          Built for every stage
-          <br />
-          <span className="text-neutral-500">of your trading.</span>
+        <h2 className="mt-6 max-w-3xl text-4xl font-medium leading-[1.08] tracking-[-.055em] text-white sm:text-6xl">
+          Built for consistency.
+          <span className="block text-neutral-500">
+            Not vanity charts.
+          </span>
         </h2>
       </div>
 
-      <p className="max-w-md text-sm leading-7 text-neutral-400">
-        A connected set of tools to help you analyze, prepare, execute and
-        continuously improve.
+      <p className="max-w-lg text-sm leading-7 text-neutral-400 lg:pb-1">
+        Most platforms drown you in raw logs without telling you what to fix.
+        EARNRAVE turns your own execution history into clear evidence—uncovering
+        where your edge lives, where capital is leaking, and how to improve.
       </p>
     </div>
 
-    <div className="mt-12 grid gap-3 sm:grid-cols-3">
-      {[
-        {
-          name: "SIGNALS",
-          title: "Find opportunities.",
-          description:
-            "Structured setups, market alerts, entry zones and invalidation levels.",
-          href: "/signals",
-        },
-        {
-          name: "FUNDING",
-          title: "Navigate funding.",
-          description:
-            "Prepare for prop firm evaluations and manage challenge risk.",
-          href: "/funding",
-        },
-        {
-          name: "INSIGHTS",
-          title: "Understand context.",
-          description:
-            "Market research, macro analysis and practical trading education.",
-          href: "/insights",
-        },
-      ].map((product) => (
-        <a
-          href={product.href}
-          key={product.name}
-          className="group relative overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0D1110] p-6 transition-all duration-200 hover:border-[#00D2B1]/25 hover:bg-[#101513] sm:p-8"
-        >
-          <BorderTrace />
+    {/* VALUE GRID */}
+    <div className="mt-16 grid gap-4 lg:grid-cols-12">
+      {/* PRIMARY FEATURE (7 COLS) */}
+      <div className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/[0.07] bg-[#0D1110] p-7 sm:p-10 lg:col-span-7 lg:p-12">
+        <BorderTrace />
+        <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-[#00D2B1]/[0.035] blur-[100px]" />
+
+        <div className="relative">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] tracking-[.17em] text-neutral-600">
-              {product.name}
+            <span className="text-[10px] tracking-[.17em] text-neutral-500">
+              01 / PERSONALIZED INTELLIGENCE
             </span>
 
-            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/[0.06] bg-white/[0.02] transition group-hover:border-[#00D2B1]/20 group-hover:bg-[#00D2B1]/[0.05]">
-              <ArrowUpRight
-                size={15}
-                className="text-neutral-600 transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-[#00D2B1]"
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.06] bg-white/[0.02]">
+              <Brain
+                size={16}
+                strokeWidth={1.5}
+                className="text-[#00D2B1]"
               />
             </div>
           </div>
 
-          <h3 className="mt-7 text-xl font-medium tracking-tight text-white">
-            {product.title}
+          <h3 className="mt-8 max-w-lg text-2xl font-medium leading-tight tracking-[-.04em] text-white sm:text-3xl">
+            From raw execution logs to clear, actionable edge.
+            <span className="text-neutral-500"> Not generic advice.</span>
           </h3>
 
-          <p className="mt-3 text-sm leading-6 text-neutral-500">
-            {product.description}
+          <p className="mt-4 max-w-xl text-sm leading-7 text-neutral-400">
+            Every trade is normalized into R-multiples and evaluated across
+            strategy expectancy, drawdown discipline, and session timing—so
+            you see what your actual results support.
           </p>
 
-          <div className="mt-8 h-px w-8 bg-[#00D2B1]/20 transition-all duration-300 group-hover:w-14 group-hover:bg-[#00D2B1]/50" />
-        </a>
-      ))}
+          {/* ANALYSIS VISUAL */}
+          <div className="mt-9 rounded-2xl border border-white/[0.05] bg-[#090C0B] p-5 sm:p-6">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-neutral-500">
+                Performance observation
+              </span>
+
+              <span className="rounded-md border border-[#00D2B1]/15 bg-[#00D2B1]/[0.05] px-2 py-1 text-[9px] tracking-wider text-[#00D2B1]">
+                DATA-BASED
+              </span>
+            </div>
+
+            <div className="mt-5 flex gap-3">
+              <div className="mt-1 h-9 w-[2px] shrink-0 bg-[#00D2B1]/60" />
+
+              <div>
+                <p className="text-sm leading-6 text-neutral-200">
+                  Your EUR/USD setups generate +14% higher expectancy during the
+                  London session than after 15:00.
+                </p>
+
+                <p className="mt-1.5 text-xs leading-5 text-neutral-600">
+                  Derived directly from your normalized R-multiple history.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex items-center gap-1.5">
+              {[35, 48, 30, 65, 42, 80, 53, 70, 46, 92, 60, 75].map(
+                (height, i) => (
+                  <div key={i} className="flex h-14 flex-1 items-end">
+                    <div
+                      className={`w-full rounded-sm transition-all duration-300 ${
+                        i === 9
+                          ? "bg-[#00D2B1]/60 shadow-[0_0_12px_rgba(0,210,177,0.25)]"
+                          : "bg-white/[0.07] group-hover:bg-white/[0.1]"
+                      }`}
+                      style={{ height: `${height}%` }}
+                    />
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+
+          {/* COMPACT CONTRAST STRIP */}
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-xl border border-white/[0.04] bg-[#090C0B]/70 px-4 py-3.5">
+              <p className="text-[10px] tracking-[.14em] text-neutral-600">
+                STANDARD JOURNALS
+              </p>
+              <p className="mt-1.5 text-xs leading-5 text-neutral-500">
+                Surface-level win rates, fragmented CSVs, and zero risk context.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-[#00D2B1]/15 bg-[#00D2B1]/[0.03] px-4 py-3.5">
+              <p className="text-[10px] tracking-[.14em] text-[#00D2B1]">
+                THE EARNRAVE STANDARD
+              </p>
+              <p className="mt-1.5 text-xs leading-5 text-neutral-300">
+                R-multiple expectancy, AI leak detection, and prop drawdown guardrails.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* SUPPORTING FEATURES (5 COLS) */}
+      <div className="grid gap-4 lg:col-span-5">
+        {/* 02 / EDGE & OBJECTIVITY */}
+        <div className="group relative flex flex-col justify-between rounded-3xl border border-white/[0.07] bg-[#0D1110] p-6 transition-colors duration-300 hover:border-white/[0.12] sm:p-8">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] tracking-[.17em] text-neutral-500">
+              02 / EDGE & OBJECTIVITY
+            </span>
+
+            <Target
+              size={17}
+              strokeWidth={1.5}
+              className="text-neutral-500 transition-colors group-hover:text-[#00D2B1]"
+            />
+          </div>
+
+          <div className="mt-6">
+            <h3 className="text-xl font-medium tracking-tight text-white">
+              Replace assumptions with evidence.
+            </h3>
+
+            <p className="mt-2.5 text-sm leading-6 text-neutral-400">
+              Stop relying on memory or isolated wins. Separate true statistical
+              expectancy from luck across Forex, Crypto, Prop, Futures, and Stocks.
+            </p>
+          </div>
+        </div>
+
+        {/* 03 / RISK & DISCIPLINE */}
+        <div className="group relative flex flex-col justify-between rounded-3xl border border-white/[0.07] bg-[#0D1110] p-6 transition-colors duration-300 hover:border-white/[0.12] sm:p-8">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] tracking-[.17em] text-neutral-500">
+              03 / RISK & DISCIPLINE
+            </span>
+
+            <ShieldCheck
+              size={17}
+              strokeWidth={1.5}
+              className="text-neutral-500 transition-colors group-hover:text-[#00D2B1]"
+            />
+          </div>
+
+          <div className="mt-6">
+            <h3 className="text-xl font-medium tracking-tight text-white">
+              Protect your consistency.
+            </h3>
+
+            <p className="mt-2.5 text-sm leading-6 text-neutral-400">
+              Catch oversized losses, revenge trades, and rule deviations early—before
+              destructive habits breach your prop limits or wipe out weeks of progress.
+            </p>
+          </div>
+        </div>
+
+        {/* 04 / CONTINUOUS FEEDBACK */}
+        <div className="group relative flex flex-col justify-between rounded-3xl border border-white/[0.07] bg-[#0D1110] p-6 transition-colors duration-300 hover:border-white/[0.12] sm:p-8">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] tracking-[.17em] text-neutral-500">
+              04 / CONTINUOUS FEEDBACK
+            </span>
+
+            <Activity
+              size={17}
+              strokeWidth={1.5}
+              className="text-neutral-500 transition-colors group-hover:text-[#00D2B1]"
+            />
+          </div>
+
+          <div className="mt-6">
+            <h3 className="text-xl font-medium tracking-tight text-white">
+              Progress you can measure.
+            </h3>
+
+            <p className="mt-2.5 text-sm leading-6 text-neutral-400">
+              Close the loop with weekly diagnostics, structured setups, and
+              market intelligence—verifying that every adjustment actually moves
+              your equity curve.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* BOTTOM STATEMENT */}
+    <div className="mt-10 flex flex-col gap-4 border-t border-white/[0.06] pt-6 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs leading-6 text-neutral-500">
+        <span>Less guesswork. Better awareness. More informed decisions.</span>
+        <span className="hidden text-neutral-700 sm:inline">·</span>
+        <span className="text-neutral-600">
+          Edge · Risk · Discipline · Feedback
+        </span>
+      </div>
+
+      <a
+        href="#intelligence"
+        className="inline-flex items-center gap-2 text-xs font-medium text-[#00D2B1] transition-colors hover:text-[#5CEBD2]"
+      >
+        Explore EARNRAVE AI
+        <ArrowUpRight size={14} />
+      </a>
+    </div>
+  </div>
+</section>
+
+{/* FAQ */}
+<section
+  id="faq"
+  className="relative overflow-hidden border-b border-white/[0.06] bg-[#080A0A] px-5 py-24 sm:py-32"
+>
+  <div className="pointer-events-none absolute right-0 top-24 h-80 w-80 rounded-full bg-[#00D2B1]/[0.025] blur-[120px]" />
+
+  <div className="relative mx-auto max-w-7xl">
+    <div className="grid gap-12 lg:grid-cols-[0.88fr_1.12fr] lg:items-start lg:gap-16">
+      {/* LEFT STICKY COLUMN */}
+      <div className="lg:sticky lg:top-28">
+        <div className="flex items-center gap-2 text-[11px] font-medium tracking-[.2em] text-[#00D2B1]">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#00D2B1]" />
+          FREQUENTLY ASKED QUESTIONS
+        </div>
+
+        <h2 className="mt-5 text-4xl font-medium leading-[1.08] tracking-[-.055em] text-white sm:text-5xl">
+          Clear answers.
+          <span className="block text-neutral-500">Zero guesswork.</span>
+        </h2>
+
+        <p className="mt-5 max-w-md text-sm leading-7 text-neutral-400">
+          Everything you need to know about EARNRAVE&apos;s analytics engine,
+          multi-market workflow, signals, funding preparation, and weekly market
+          insights.
+        </p>
+
+        {/* CATEGORY FILTER PILLS */}
+        <div className="mt-8 flex flex-wrap gap-2">
+          {faqCategories.map((category) => {
+            const isSelected = activeFaqCategory === category;
+            return (
+              <button
+                key={category}
+                type="button"
+                onClick={() => {
+                  setActiveFaqCategory(category);
+                  const firstMatch =
+                    category === "All"
+                      ? faqItems[0]
+                      : faqItems.find((item) => item.category === category);
+                  setOpenFaqId(firstMatch ? firstMatch.id : null);
+                }}
+                className={`rounded-lg border px-3.5 py-1.5 text-xs font-medium transition-all duration-200 ${
+                  isSelected
+                    ? "border-[#00D2B1]/40 bg-[#00D2B1]/[0.08] text-[#00D2B1]"
+                    : "border-white/[0.07] bg-[#0C0F0F] text-neutral-400 hover:border-white/[0.14] hover:text-white"
+                }`}
+              >
+                {category}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* DIRECT SUPPORT CARD */}
+        <div className="mt-8 rounded-2xl border border-white/[0.07] bg-[#0C100F] p-5 sm:p-6">
+          <div className="flex items-start gap-3.5">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#00D2B1]/15 bg-[#00D2B1]/[0.06]">
+              <ShieldCheck size={16} className="text-[#00D2B1]" />
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-medium text-white">
+                Still have a question?
+              </p>
+              <p className="mt-1 text-xs leading-6 text-neutral-400">
+                Reach out directly for early access, broker support, or custom
+                inquiries.
+              </p>
+
+              <a
+                href="mailto:hello@earnrave.com?subject=EARNRAVE%20Question"
+                className="mt-3.5 inline-flex items-center gap-1.5 text-xs font-medium text-[#00D2B1] transition hover:text-white"
+              >
+                hello@earnrave.com
+                <ArrowUpRight size={13} />
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* RIGHT ACCORDION LIST */}
+      <div className="space-y-3">
+        {filteredFaqItems.map((item, idx) => {
+          const isOpen = openFaqId === item.id;
+
+          return (
+            <div
+              key={item.id}
+              className={`overflow-hidden rounded-2xl border transition-colors duration-300 ${
+                isOpen
+                  ? "border-[#00D2B1]/25 bg-[#0D1211]"
+                  : "border-white/[0.07] bg-[#0C0F0F] hover:border-white/[0.13]"
+              }`}
+            >
+              <button
+                type="button"
+                onClick={() =>
+                  setOpenFaqId((prev) => (prev === item.id ? null : item.id))
+                }
+                aria-expanded={isOpen}
+                className="flex w-full items-start justify-between gap-4 px-5 py-5 text-left sm:px-7 sm:py-6"
+              >
+                <div className="flex items-start gap-4">
+                  <span className="mt-0.5 font-mono text-[11px] text-neutral-600">
+                    {String(idx + 1).padStart(2, "0")}
+                  </span>
+
+                  <div>
+                    <span className="inline-block text-[10px] font-medium tracking-[.16em] text-[#00D2B1]/80">
+                      {item.category.toUpperCase()}
+                    </span>
+                    <h3 className="mt-1.5 text-base font-medium leading-snug tracking-[-0.02em] text-white sm:text-lg">
+                      {item.question}
+                    </h3>
+                  </div>
+                </div>
+
+                <span
+                  className={`mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-all duration-300 ${
+                    isOpen
+                      ? "rotate-45 border-[#00D2B1]/30 bg-[#00D2B1]/10 text-[#00D2B1]"
+                      : "border-white/[0.08] bg-white/[0.02] text-neutral-400"
+                  }`}
+                >
+                  <Plus size={15} />
+                </span>
+              </button>
+
+              <AnimatePresence initial={false}>
+                {isOpen && (
+                  <motion.div
+                    key="content"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    <div className="border-t border-white/[0.05] px-5 pb-6 pt-4 sm:px-7 sm:pl-14">
+                      <p className="text-sm leading-7 text-neutral-400">
+                        {item.answer}
+                      </p>
+
+                      {item.highlight && (
+                        <div className="mt-4 inline-flex items-center gap-2 rounded-lg border border-[#00D2B1]/15 bg-[#00D2B1]/[0.04] px-3 py-1.5 text-[11px] font-medium text-[#00D2B1]">
+                          <span className="h-1.5 w-1.5 rounded-full bg-[#00D2B1]" />
+                          {item.highlight}
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          );
+        })}
+      </div>
     </div>
   </div>
 </section>
 
 {/* FINAL CTA */}
-<section className="px-5 py-20 sm:py-24">
-  <div className="mx-auto max-w-7xl rounded-2xl border border-white/[0.08] bg-[#0C100F] px-6 py-12 sm:px-12 sm:py-16">
-    <div className="flex flex-col justify-between gap-8 sm:flex-row sm:items-center">
-      <div>
-        <p className="text-[11px] font-medium tracking-[.18em] text-[#00D2B1]">
-          TRADE WITH INTENTION
-        </p>
+<section className="relative overflow-hidden bg-[#080A0A] px-5 py-24 sm:py-32">
+  {/* Ambient background glow */}
+  <div className="pointer-events-none absolute left-1/2 top-1/2 h-[420px] w-[760px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#00D2B1]/[0.03] blur-[130px]" />
 
-        <h2 className="mt-4 max-w-2xl text-3xl font-medium leading-tight tracking-[-.05em] sm:text-5xl">
-          Stop guessing.
-          <span className="text-neutral-500"> Start understanding.</span>
-        </h2>
+  <div className="relative mx-auto max-w-7xl">
+    <div className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0C100F] px-7 py-14 sm:px-14 sm:py-20 lg:px-20">
+      <BorderTrace />
 
-        <p className="mt-4 text-sm leading-6 text-neutral-400">
-          Your next level starts with understanding your current one.
-        </p>
+      {/* Top hairline highlight */}
+      <div className="absolute left-1/2 top-0 h-px w-1/2 -translate-x-1/2 bg-gradient-to-r from-transparent via-[#00D2B1]/40 to-transparent" />
+
+      {/* Subtle corner grid / radial accent */}
+      <div className="pointer-events-none absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-[#00D2B1]/[0.04] blur-[90px]" />
+
+      <div className="relative grid gap-10 lg:grid-cols-[1.2fr_.8fr] lg:items-center">
+        {/* LEFT COPY */}
+        <div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#00D2B1]/15 bg-[#00D2B1]/[0.05] px-3 py-1 text-[11px] font-medium tracking-[.18em] text-[#00D2B1]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#00D2B1]" />
+            TRADE WITH INTENTION
+          </div>
+
+          <h2 className="mt-6 max-w-2xl text-4xl font-medium leading-[1.06] tracking-[-.055em] text-white sm:text-5xl lg:text-6xl">
+            Stop guessing.
+            <span className="block text-neutral-500">
+              Start understanding.
+            </span>
+          </h2>
+
+          <p className="mt-5 max-w-xl text-sm leading-7 text-neutral-400 sm:text-base">
+            Your next level starts with clear evidence from your own execution.
+            Join early access for AI-Analytics or tap into live Signals,
+            Funding prep, and weekly Insights today.
+          </p>
+
+          {/* TRUST & PILLAR STRIP */}
+          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-white/[0.06] pt-6 text-xs text-neutral-500">
+            <span className="flex items-center gap-2">
+              <ShieldCheck size={14} className="text-[#00D2B1]" />
+              Read-only &amp; non-custodial
+            </span>
+            <span className="hidden text-neutral-700 sm:inline">·</span>
+            <span>Forex · Prop · Crypto · Futures · Stocks</span>
+          </div>
+        </div>
+
+        {/* RIGHT ACTION CARD */}
+        <div className="flex flex-col justify-center rounded-2xl border border-white/[0.06] bg-[#090C0B]/90 p-6 sm:p-8 lg:ml-auto lg:w-full lg:max-w-[400px]">
+          <p className="text-[10px] font-medium tracking-[.18em] text-neutral-500">
+            GET STARTED WITH EARNRAVE
+          </p>
+
+          <p className="mt-2 text-sm leading-6 text-neutral-300">
+            Request priority onboarding for the analytics beta or explore our
+            live trading ecosystem.
+          </p>
+
+          <div className="mt-6 flex flex-col gap-3">
+            <a
+              href="mailto:hello@earnrave.com?subject=EARNRAVE%20Early%20Access"
+              className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#00D2B1] px-5 text-sm font-medium text-[#04110E] transition hover:bg-[#4AE6CD] hover:shadow-[0_0_28px_rgba(0,210,177,0.2)]"
+            >
+              Get early access
+              <ArrowUpRight size={16} />
+            </a>
+
+            <a
+              href="/signals"
+              className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-white/[0.1] bg-white/[0.02] px-5 text-sm font-medium text-neutral-300 transition hover:border-[#00D2B1]/35 hover:bg-white/[0.04] hover:text-white"
+            >
+              Explore live signals
+              <ArrowRight size={15} />
+            </a>
+          </div>
+
+          <p className="mt-4 text-center text-[11px] text-neutral-600">
+            AI-Analytics · Signals · Funding · Insights
+          </p>
+        </div>
       </div>
-
-      <a
-        href="mailto:hello@earnrave.com?subject=EARNRAVE%20Early%20Access"
-        className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-[#00D2B1] px-5 text-sm font-medium text-[#04110E] transition hover:bg-[#4AE6CD] hover:shadow-[0_0_25px_rgba(0,210,177,0.08)]"
-      >
-        Get early access
-        <ArrowUpRight size={15} />
-      </a>
     </div>
   </div>
 </section>
