@@ -1246,7 +1246,9 @@ useEffect(() => {
       {/* CRYPTO */}
                       <div
                         className={`flex items-center gap-3 rounded-xl px-3 py-3 transition-colors ${
-                          activeBrokerIndex < 10 ? "bg-white/[0.03]" : "hover:bg-white/[0.02]"
+                          activeBrokerIndex !== null && activeBrokerIndex < 10
+                ? "bg-white/[0.03]"
+                : "hover:bg-white/[0.05]"
                         }`}
                       >
                         <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.04] bg-[#0B0D0D]">
@@ -1268,7 +1270,9 @@ useEffect(() => {
 
                         <span
                           className={`text-[10px] ${
-                            activeBrokerIndex < 10 ? "text-[#00D2B1]" : "text-neutral-500"
+                            activeBrokerIndex !== null && activeBrokerIndex < 10
+                          ? "text-[#00D2B1]"
+                          : "text-neutral-500"
                           }`}
                         >
                           Connected
@@ -1278,7 +1282,9 @@ useEffect(() => {
                       {/* FOREX */}
                       <div
                         className={`flex items-center gap-3 rounded-xl px-3 py-3 transition-colors ${
-                          activeBrokerIndex >= 10 ? "bg-white/[0.03]" : "hover:bg-white/[0.02]"
+                         activeBrokerIndex !== null && activeBrokerIndex < 10
+                          ? "text-[#00D2B1]"
+                          : "text-neutral-500"
                         }`}
                       >
                         <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.04] bg-[#0B0D0D]">
@@ -1300,7 +1306,9 @@ useEffect(() => {
 
                         <span
                           className={`text-[10px] ${
-                            activeBrokerIndex >= 10 ? "text-[#00D2B1]" : "text-neutral-500"
+                            activeBrokerIndex !== null && activeBrokerIndex < 10
+                            ? "text-[#00D2B1]"
+                            : "text-neutral-500"
                           }`}
                         >
                           Connected
