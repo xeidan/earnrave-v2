@@ -262,25 +262,67 @@ export default function MobileNavbar() {
                                 {(productNavigation?.items ?? []).map(
                                   (link, linkIndex) => (
                                     <motion.a
-                                      key={link.label}
-                                      href={link.href}
-                                      initial={{
-                                        opacity: 0,
-                                        x: -8,
-                                      }}
-                                      animate={{
-                                        opacity: 1,
-                                        x: 0,
-                                        transition: {
-                                          delay: linkIndex * 0.035,
-                                          duration: 0.2,
-                                        },
-                                      }}
-                                      onClick={() => setOpen(false)}
-                                      className="flex items-center py-3 text-[14px] text-neutral-500 transition-colors hover:text-white"
-                                    >
-                                      {link.label}
-                                    </motion.a>
+  key={link.label}
+  href={link.href}
+  initial={{
+    opacity: 0,
+    x: -8,
+  }}
+  animate={{
+    opacity: 1,
+    x: 0,
+    transition: {
+      delay: linkIndex * 0.035,
+      duration: 0.2,
+    },
+  }}
+  onClick={(e) => {
+    e.preventDefault();
+    setOpen(false);
+
+    const target = document.querySelector(link.href);
+
+    if (target) {
+      const navbarOffset = 76;
+      const targetPosition =
+        target.getBoundingClientRect().top +
+        window.scrollY -
+        navbarOffset;
+
+      const startPosition = window.scrollY;
+      const distance = targetPosition - startPosition;
+      const duration = 1400;
+      let startTime: number | null = null;
+
+      const easeInOutCubic = (t: number) =>
+        t < 0.5
+          ? 4 * t * t * t
+          : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+      const animateScroll = (currentTime: number) => {
+        if (startTime === null) startTime = currentTime;
+
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easedProgress = easeInOutCubic(progress);
+
+        window.scrollTo(
+          0,
+          startPosition + distance * easedProgress
+        );
+
+        if (progress < 1) {
+          requestAnimationFrame(animateScroll);
+        }
+      };
+
+      requestAnimationFrame(animateScroll);
+    }
+  }}
+  className="flex items-center py-3 text-[14px] text-neutral-500 transition-colors hover:text-white"
+>
+  {link.label}
+</motion.a>
                                   )
                                 )}
                               </div>
