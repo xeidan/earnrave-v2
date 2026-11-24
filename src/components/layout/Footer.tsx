@@ -1,7 +1,7 @@
 import Image from "next/image";
 
 const productLinks = [
-  { label: "AI-Analytics", href: "/analytics" },
+  { label: "AI-Analytics", href: "/" },
   { label: "Signals", href: "/signals" },
   { label: "Funding", href: "/funding" },
   { label: "Insights", href: "/insights" },
@@ -15,19 +15,20 @@ const platformLinks = [
 export default function Footer() {
   return (
     <footer className="border-t border-white/[0.06] bg-[#070909]">
-      <div className="mx-auto max-w-[1600px] px-5 py-16 md:px-8 md:py-20">
+      <div className="mx-auto max-w-7xl px-5 py-16 sm:py-20">
 
         {/* Main Footer */}
         <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
 
           {/* Brand */}
           <div className="lg:col-span-2">
-            <a href="/" aria-label="EarnRave home">
+            <a href="/" aria-label="EarnRave home" className="inline-flex">
               <Image
                 src="/earnrave-logo.svg"
                 alt="EarnRave"
                 width={160}
                 height={40}
+                className="h-auto w-[160px]"
               />
             </a>
 
@@ -48,7 +49,7 @@ export default function Footer() {
                 <li key={item.label}>
                   <a
                     href={item.href}
-                    className="text-sm text-neutral-500 transition hover:text-white"
+                    className="text-sm text-neutral-500 transition-colors duration-200 hover:text-white"
                   >
                     {item.label}
                   </a>
@@ -68,7 +69,7 @@ export default function Footer() {
                 <li key={item.label}>
                   <a
                     href={item.href}
-                    className="text-sm text-neutral-500 transition hover:text-white"
+                    className="text-sm text-neutral-500 transition-colors duration-200 hover:text-white"
                   >
                     {item.label}
                   </a>
@@ -90,19 +91,20 @@ export default function Footer() {
           <div className="flex items-center gap-6">
             <a
               href="/privacy"
-              className="text-xs text-neutral-600 transition hover:text-neutral-300"
+              className="text-xs text-neutral-600 transition-colors duration-200 hover:text-neutral-300"
             >
               Privacy
             </a>
 
             <a
               href="/terms"
-              className="text-xs text-neutral-600 transition hover:text-neutral-300"
+              className="text-xs text-neutral-600 transition-colors duration-200 hover:text-neutral-300"
             >
               Terms
             </a>
           </div>
         </div>
+
       </div>
     </footer>
   );

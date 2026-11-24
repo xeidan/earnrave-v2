@@ -33,7 +33,8 @@ export default function DesktopNavbar() {
       {/* Ambient glow */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-80 bg-[radial-gradient(ellipse_at_top,rgba(0,210,177,.09),transparent_68%)]" />
 
-      <div className="relative mx-auto max-w-[1600px] px-8 pt-5">
+      {/* Global alignment from globals.css */}
+      <div className="site-container pt-5">
         <div className="overflow-hidden rounded-[24px] border border-white/[0.07] bg-[#090b0b]/95 shadow-[0_24px_70px_rgba(0,0,0,.42)] backdrop-blur-2xl">
           {/* Top Navigation */}
           <div className="flex h-[78px] items-center justify-between px-7">
@@ -100,6 +101,6 @@ export default function DesktopNavbar() {
           </div>
         </div>
       </div>
-</header>
+    </header>
   );
 }
