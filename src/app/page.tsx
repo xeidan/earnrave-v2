@@ -423,7 +423,7 @@ useEffect(() => {
 
       <main className="min-h-screen overflow-hidden bg-[#080A0A] text-white">
         {/* HERO */}
-        <section className="relative px-5 lg:pb-10 pt-36 lg:pt-56">
+        <motion.section initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.12 }} transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }} className="relative px-5 lg:pb-10 pt-36 lg:pt-56">
           <div className="mx-auto max-w-7xl">
             <div className="grid items-end gap-12 md:grid-cols-[1.15fr_.85fr]">
               <motion.div
@@ -458,7 +458,7 @@ useEffect(() => {
                   </a>
 
                   <a
-                    href="#intelligence"
+                    href="#ai-assistant"
                     className="inline-flex h-12 items-center gap-2 rounded-lg border border-white/[0.12] px-6 text-sm text-neutral-300 transition hover:border-[#00D2B1]/40 hover:text-white"
                   >
                     Connect broker
@@ -499,10 +499,10 @@ useEffect(() => {
               </motion.div>
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* ANALYTICS PRODUCT */}
-        <section id="analytics" className="sm:py-24 py-20 px-5">
+        <motion.section id="analytics" initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.12 }} transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }} className="px-5 py-24 sm:py-28">
           <div className="mx-auto max-w-7xl">
             {/* Dashboard frame */}
             <motion.div
@@ -644,7 +644,7 @@ useEffect(() => {
                   </div>
 
                   <a
-                    href="#intelligence"
+                    href="#ai-assistant"
                     className="text-xs text-neutral-500 transition hover:text-[#00D2B1]"
                   >
                     View analysis <ArrowRight size={12} className="ml-1 inline" />
@@ -696,10 +696,10 @@ useEffect(() => {
               Illustrative dashboard · Sample trading data
             </p>
           </div>
-        </section>
+        </motion.section>
 
       {/* AI INTELLIGENCE */}
-      <section id="intelligence" className="px-5 py-20 sm:py-24">
+      <motion.section id="ai-assistant" initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.12 }} transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }} className="px-5 py-24 sm:py-28">
         <div className="mx-auto max-w-7xl">
           <div className="grid items-start gap-12 lg:grid-cols-2">
 
@@ -723,7 +723,7 @@ useEffect(() => {
               </p>
 
               <a
-                href="#ecosystem"
+                href="#why-choose-us"
                 className="mt-7 inline-flex items-center gap-2 text-sm font-medium text-[#00D2B1] transition hover:text-white"
               >
                 Explore the EARNRAVE ecosystem
@@ -979,10 +979,10 @@ useEffect(() => {
 
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* BROKER CONNECTION ECOSYSTEM */}
-      <section className="relative overflow-hidden border-y border-white/[0.05] bg-[#080A0A] px-5 py-24 sm:py-28">
+      <motion.section id="connect-broker" initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.12 }} transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }} className="relative overflow-hidden border-y border-white/[0.05] bg-[#080A0A] px-5 py-24 sm:py-28">
         <div className="mx-auto max-w-7xl">
 
           {/* INTRO */}
@@ -1344,13 +1344,17 @@ useEffect(() => {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
 
 {/* WHY EARNRAVE */}
-<section
-  id="ecosystem"
-  className="relative overflow-hidden border-y border-white/[0.06] bg-[#080A0A] px-5 py-24 sm:py-32"
+<motion.section
+  id="why-choose-us"
+  initial={{ opacity: 0, y: 16 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  viewport={{ once: true, amount: 0.12 }}
+  transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+  className="relative overflow-hidden border-y border-white/[0.06] bg-[#080A0A] px-5 py-24 sm:py-28"
 >
   <div className="mx-auto max-w-7xl">
     {/* HEADER */}
@@ -1571,7 +1575,7 @@ useEffect(() => {
       </div>
 
       <a
-        href="#intelligence"
+        href="#ai-assistant"
         className="inline-flex items-center gap-2 text-xs font-medium text-[#00D2B1] transition-colors hover:text-[#5CEBD2]"
       >
         Explore EARNRAVE AI
@@ -1579,12 +1583,16 @@ useEffect(() => {
       </a>
     </div>
   </div>
-</section>
+</motion.section>
 
 {/* FAQ */}
-<section
+<motion.section
   id="faq"
-  className="relative overflow-hidden border-b border-white/[0.06] bg-[#080A0A] px-5 py-24 sm:py-32"
+  initial={{ opacity: 0, y: 16 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  viewport={{ once: true, amount: 0.12 }}
+  transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+  className="relative overflow-hidden border-b border-white/[0.06] bg-[#080A0A] px-5 py-24 sm:py-28"
 >
   <div className="pointer-events-none absolute right-0 top-24 h-80 w-80 rounded-full bg-[#00D2B1]/[0.025] blur-[120px]" />
 
@@ -1742,10 +1750,10 @@ useEffect(() => {
       </div>
     </div>
   </div>
-</section>
+</motion.section>
 
 {/* FINAL CTA */}
-<section className="relative overflow-hidden bg-[#080A0A] px-5 py-24 sm:py-32">
+<motion.section initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.12 }} transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }} className="relative overflow-hidden bg-[#080A0A] px-5 py-24 sm:py-28">
   {/* Ambient background glow */}
   <div className="pointer-events-none absolute left-1/2 top-1/2 h-[420px] w-[760px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#00D2B1]/[0.03] blur-[130px]" />
 
@@ -1827,7 +1835,7 @@ useEffect(() => {
       </div>
     </div>
   </div>
-</section>
+</motion.section>
 
 </main>
 
