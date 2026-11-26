@@ -8,7 +8,7 @@ import {
 
 import type { Product } from "@/providers/ProductProvider";
 
-type ProductConfig = {
+export type ProductConfig = {
   id: Product;
   title: string;
   label: string;

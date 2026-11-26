@@ -1,28 +1,27 @@
 import Image from "next/image";
+import Link from "next/link";
 
 const productLinks = [
   { label: "AI-Analytics", href: "/" },
   { label: "Signals", href: "/signals" },
   { label: "Funding", href: "/funding" },
-  { label: "Insights", href: "/insights" },
+  { label: "Education", href: "/education" },
 ];
 
 const platformLinks = [
-  { label: "Features", href: "#features" },
-  { label: "Pricing", href: "#pricing" },
+  { label: "Features", href: "/#why-choose-us" },
+  { label: "Pricing", href: "/signals#pricing" },
 ];
 
 export default function Footer() {
   return (
     <footer className="border-t border-white/[0.06] bg-[#070909]">
       <div className="mx-auto max-w-7xl px-5 py-16 sm:py-20">
-
         {/* Main Footer */}
         <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
-
           {/* Brand */}
           <div className="lg:col-span-2">
-            <a href="/" aria-label="EarnRave home" className="inline-flex">
+            <Link href="/" aria-label="EarnRave home" className="inline-flex">
               <Image
                 src="/earnrave-logo.svg"
                 alt="EarnRave"
@@ -30,11 +29,11 @@ export default function Footer() {
                 height={40}
                 className="h-auto w-[160px]"
               />
-            </a>
+            </Link>
 
             <p className="mt-5 max-w-sm text-sm leading-7 text-neutral-500">
-              Tools, insights and intelligence to help traders
-              make better decisions and build consistency.
+              Tools, guides, and intelligence to help traders make clearer
+              decisions and build steady habits.
             </p>
           </div>
 
@@ -47,12 +46,12 @@ export default function Footer() {
             <ul className="space-y-4">
               {productLinks.map((item) => (
                 <li key={item.label}>
-                  <a
+                  <Link
                     href={item.href}
                     className="text-sm text-neutral-500 transition-colors duration-200 hover:text-white"
                   >
                     {item.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -67,12 +66,12 @@ export default function Footer() {
             <ul className="space-y-4">
               {platformLinks.map((item) => (
                 <li key={item.label}>
-                  <a
+                  <Link
                     href={item.href}
                     className="text-sm text-neutral-500 transition-colors duration-200 hover:text-white"
                   >
                     {item.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -89,22 +88,21 @@ export default function Footer() {
           </p>
 
           <div className="flex items-center gap-6">
-            <a
+            <Link
               href="/privacy"
               className="text-xs text-neutral-600 transition-colors duration-200 hover:text-neutral-300"
             >
               Privacy
-            </a>
+            </Link>
 
-            <a
+            <Link
               href="/terms"
               className="text-xs text-neutral-600 transition-colors duration-200 hover:text-neutral-300"
             >
               Terms
-            </a>
+            </Link>
           </div>
         </div>
-
       </div>
     </footer>
   );

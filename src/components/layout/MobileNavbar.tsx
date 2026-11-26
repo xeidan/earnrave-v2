@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import {
   ArrowUpRight,
   ChevronDown,
@@ -17,16 +19,18 @@ import type { Product } from "@/providers/ProductProvider";
 
 export default function MobileNavbar() {
   const { product, setProduct } = useProduct();
+  const pathname = usePathname();
+  const router = useRouter();
 
   const [open, setOpen] = useState(false);
-  const [expandedProduct, setExpandedProduct] = useState<Product | null>(product);
+  const [expandedProduct, setExpandedProduct] = useState<Product | null>(
+    product
+  );
 
-  // Keep the expanded accordion aligned with the selected product.
   useEffect(() => {
     setExpandedProduct(product);
   }, [product]);
 
-  // Lock background scrolling while the menu is open.
   useEffect(() => {
     if (!open) return;
 
@@ -47,20 +51,48 @@ export default function MobileNavbar() {
     };
   }, [open]);
 
-  // Toggle product accordion.
-  const toggleProduct = (productId: Product) => {
-    setExpandedProduct((current) =>
-      current === productId ? null : productId
-    );
+  const handleProductSelect = (
+    item: (typeof products)[number],
+    navigateImmediately = false
+  ) => {
+    setProduct(item.id);
+    setExpandedProduct((current) => (current === item.id ? null : item.id));
 
-    setProduct(productId);
+    if (navigateImmediately) {
+      setOpen(false);
+      router.push(item.href);
+    }
   };
 
-  // Full-screen menu animation.
+  const handleSectionLink = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    href: string
+  ) => {
+    const [targetPath, hash] = href.split("#");
+    const effectivePath = targetPath || "/";
+
+    setOpen(false);
+
+    if (!hash) {
+      e.preventDefault();
+      router.push(effectivePath);
+      return;
+    }
+
+    if (pathname === effectivePath) {
+      const target = document.getElementById(hash);
+      if (target) {
+        e.preventDefault();
+        const navbarOffset = 76;
+        const targetPosition =
+          target.getBoundingClientRect().top + window.scrollY - navbarOffset;
+        window.scrollTo({ top: targetPosition, behavior: "smooth" });
+      }
+    }
+  };
+
   const drawerVariants = {
-    hidden: {
-      x: "100%",
-    },
+    hidden: { x: "100%" },
     visible: {
       x: 0,
       transition: {
@@ -80,10 +112,7 @@ export default function MobileNavbar() {
   };
 
   const itemVariants = {
-    hidden: {
-      opacity: 0,
-      y: 12,
-    },
+    hidden: { opacity: 0, y: 12 },
     visible: {
       opacity: 1,
       y: 0,
@@ -96,10 +125,8 @@ export default function MobileNavbar() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 lg:hidden">
-      {/* Mobile Header */}
       <div className="relative flex h-[76px] items-center justify-between border-b border-white/[0.06] bg-[#070909]/95 px-5 backdrop-blur-2xl">
-        {/* Logo */}
-        <a href="/" aria-label="EarnRave home">
+        <Link href="/" aria-label="EarnRave home">
           <Image
             src="/earnrave-logo.svg"
             alt="EarnRave"
@@ -107,9 +134,8 @@ export default function MobileNavbar() {
             height={36}
             priority
           />
-        </a>
+        </Link>
 
-        {/* Menu Trigger */}
         <button
           type="button"
           onClick={() => setOpen(true)}
@@ -121,11 +147,9 @@ export default function MobileNavbar() {
         </button>
       </div>
 
-      {/* Navigation Drawer */}
       <AnimatePresence>
         {open && (
           <>
-            {/* Backdrop */}
             <motion.button
               type="button"
               aria-label="Close navigation menu"
@@ -139,7 +163,6 @@ export default function MobileNavbar() {
               }}
             />
 
-            {/* Full-Screen Drawer */}
             <motion.aside
               variants={drawerVariants}
               initial="hidden"
@@ -147,22 +170,23 @@ export default function MobileNavbar() {
               exit="exit"
               className="fixed inset-0 z-[70] flex h-[100dvh] w-full flex-col overflow-hidden border border-white/[0.08] bg-[#101212] shadow-[0_30px_100px_rgba(0,0,0,0.65)]"
             >
-              {/* Drawer Header */}
               <motion.div
                 variants={itemVariants}
                 className="flex h-[76px] shrink-0 items-center justify-between border-b border-white/[0.06] px-5"
               >
-                {/* Logo */}
-                <a href="/" aria-label="EarnRave home">
+                <Link
+                  href="/"
+                  onClick={() => setOpen(false)}
+                  aria-label="EarnRave home"
+                >
                   <Image
                     src="/earnrave-logo.svg"
                     alt="EarnRave"
                     width={148}
                     height={36}
                   />
-                </a>
+                </Link>
 
-                {/* Close Button */}
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
@@ -173,7 +197,6 @@ export default function MobileNavbar() {
                 </button>
               </motion.div>
 
-              {/* Navigation Content */}
               <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-7">
                 <nav className="space-y-2">
                   {products.map((item, index) => {
@@ -187,18 +210,19 @@ export default function MobileNavbar() {
                         variants={itemVariants}
                         className="overflow-hidden"
                       >
-                        {/* Pillar */}
-                        <button
-                          type="button"
-                          onClick={() => toggleProduct(item.id)}
-                          aria-expanded={isExpanded}
-                          className={`flex w-full items-center justify-between rounded-xl px-3 py-4 text-left transition-colors duration-200 ${
-                            isExpanded
-                              ? "text-white"
-                              : "text-neutral-300 hover:text-white"
-                          }`}
-                        >
-                          <span className="flex items-center gap-3">
+                        <div className="flex items-center justify-between rounded-xl px-3 py-3">
+                          <Link
+                            href={item.href}
+                            onClick={() => {
+                              setProduct(item.id);
+                              setOpen(false);
+                            }}
+                            className={`flex flex-1 items-center gap-3 text-left transition-colors duration-200 ${
+                              isExpanded
+                                ? "text-white"
+                                : "text-neutral-300 hover:text-white"
+                            }`}
+                          >
                             <Icon
                               size={19}
                               className={`transition-colors duration-200 ${
@@ -211,24 +235,28 @@ export default function MobileNavbar() {
                             <span className="text-[17px] font-medium tracking-[-0.02em]">
                               {item.title}
                             </span>
-                          </span>
+                          </Link>
 
-                          <ChevronDown
-                            size={18}
-                            className={`text-neutral-500 transition-transform duration-300 ${
-                              isExpanded ? "rotate-180" : ""
-                            }`}
-                          />
-                        </button>
+                          <button
+                            type="button"
+                            onClick={() => handleProductSelect(item, false)}
+                            aria-label={`Toggle ${item.title} sections`}
+                            aria-expanded={isExpanded}
+                            className="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-500 transition hover:bg-white/[0.04] hover:text-white"
+                          >
+                            <ChevronDown
+                              size={18}
+                              className={`transition-transform duration-300 ${
+                                isExpanded ? "rotate-180" : ""
+                              }`}
+                            />
+                          </button>
+                        </div>
 
-                        {/* Accordion Links */}
                         <AnimatePresence initial={false}>
                           {isExpanded && (
                             <motion.div
-                              initial={{
-                                height: 0,
-                                opacity: 0,
-                              }}
+                              initial={{ height: 0, opacity: 0 }}
                               animate={{
                                 height: "auto",
                                 opacity: 1,
@@ -251,9 +279,7 @@ export default function MobileNavbar() {
                                     duration: 0.28,
                                     ease: [0.4, 0, 1, 1],
                                   },
-                                  opacity: {
-                                    duration: 0.15,
-                                  },
+                                  opacity: { duration: 0.15 },
                                 },
                               }}
                               className="overflow-hidden"
@@ -261,68 +287,28 @@ export default function MobileNavbar() {
                               <div className="ml-9 border-l border-white/[0.08] pl-4">
                                 {(productNavigation?.items ?? []).map(
                                   (link, linkIndex) => (
-                                    <motion.a
-  key={link.label}
-  href={link.href}
-  initial={{
-    opacity: 0,
-    x: -8,
-  }}
-  animate={{
-    opacity: 1,
-    x: 0,
-    transition: {
-      delay: linkIndex * 0.035,
-      duration: 0.2,
-    },
-  }}
-  onClick={(e) => {
-    e.preventDefault();
-    setOpen(false);
-
-    const target = document.querySelector(link.href);
-
-    if (target) {
-      const navbarOffset = 76;
-      const targetPosition =
-        target.getBoundingClientRect().top +
-        window.scrollY -
-        navbarOffset;
-
-      const startPosition = window.scrollY;
-      const distance = targetPosition - startPosition;
-      const duration = 1400;
-      let startTime: number | null = null;
-
-      const easeInOutCubic = (t: number) =>
-        t < 0.5
-          ? 4 * t * t * t
-          : 1 - Math.pow(-2 * t + 2, 3) / 2;
-
-      const animateScroll = (currentTime: number) => {
-        if (startTime === null) startTime = currentTime;
-
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const easedProgress = easeInOutCubic(progress);
-
-        window.scrollTo(
-          0,
-          startPosition + distance * easedProgress
-        );
-
-        if (progress < 1) {
-          requestAnimationFrame(animateScroll);
-        }
-      };
-
-      requestAnimationFrame(animateScroll);
-    }
-  }}
-  className="flex items-center py-3 text-[14px] text-neutral-500 transition-colors hover:text-white"
->
-  {link.label}
-</motion.a>
+                                    <motion.div
+                                      key={link.label}
+                                      initial={{ opacity: 0, x: -8 }}
+                                      animate={{
+                                        opacity: 1,
+                                        x: 0,
+                                        transition: {
+                                          delay: linkIndex * 0.035,
+                                          duration: 0.2,
+                                        },
+                                      }}
+                                    >
+                                      <Link
+                                        href={link.href}
+                                        onClick={(e) =>
+                                          handleSectionLink(e, link.href)
+                                        }
+                                        className="flex items-center py-3 text-[14px] text-neutral-500 transition-colors hover:text-white"
+                                      >
+                                        {link.label}
+                                      </Link>
+                                    </motion.div>
                                   )
                                 )}
                               </div>
@@ -330,7 +316,6 @@ export default function MobileNavbar() {
                           )}
                         </AnimatePresence>
 
-                        {/* Pillar Separator */}
                         {index !== products.length - 1 && (
                           <div className="mx-3 h-px bg-white/[0.035]" />
                         )}
@@ -339,46 +324,42 @@ export default function MobileNavbar() {
                   })}
                 </nav>
 
-                {/* Global Links */}
                 <motion.div
                   variants={itemVariants}
                   className="mt-7 border-t border-white/[0.06] pt-5"
                 >
-                  <a
-                    href="#features"
-                    onClick={() => setOpen(false)}
+                  <Link
+                    href="/#why-choose-us"
+                    onClick={(e) => handleSectionLink(e, "/#why-choose-us")}
                     className="block px-3 py-3 text-sm text-neutral-400 transition hover:text-white"
                   >
                     Features
-                  </a>
+                  </Link>
 
-                  <a
-                    href="#pricing"
-                    onClick={() => setOpen(false)}
+                  <Link
+                    href="/signals#pricing"
+                    onClick={(e) => handleSectionLink(e, "/signals#pricing")}
                     className="block px-3 py-3 text-sm text-neutral-400 transition hover:text-white"
                   >
                     Pricing
-                  </a>
+                  </Link>
                 </motion.div>
               </div>
 
-              {/* Bottom Account Actions */}
               <motion.div
                 variants={itemVariants}
                 className="shrink-0 border-t border-white/[0.06] bg-[#0c0e0e] p-5 pb-[calc(20px+env(safe-area-inset-bottom))]"
               >
                 <div className="flex gap-3">
-                  {/* Log In */}
-                  <a
+                  <Link
                     href="/login"
                     onClick={() => setOpen(false)}
                     className="flex h-12 flex-1 items-center justify-center rounded-xl border border-white/[0.09] bg-white/[0.025] text-sm font-medium text-neutral-300 transition hover:bg-white/[0.06] hover:text-white"
                   >
                     Log in
-                  </a>
+                  </Link>
 
-                  {/* Get Started */}
-                  <a
+                  <Link
                     href="/signup"
                     onClick={() => setOpen(false)}
                     className="group flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-white text-sm font-semibold text-black transition duration-300 hover:bg-[#e8f5f2] active:scale-[0.98]"
@@ -388,7 +369,7 @@ export default function MobileNavbar() {
                       size={15}
                       className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                     />
-                  </a>
+                  </Link>
                 </div>
               </motion.div>
             </motion.aside>

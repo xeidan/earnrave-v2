@@ -1,8 +1,9 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
-export type Product = "analytics" | "signals" | "funding" | "insights";
+export type Product = "analytics" | "signals" | "funding" | "education";
 
 type ContextValue = {
   product: Product;
@@ -11,12 +12,26 @@ type ContextValue = {
 
 const Context = createContext<ContextValue | null>(null);
 
+function getProductFromPathname(pathname: string): Product {
+  if (pathname.startsWith("/signals")) return "signals";
+  if (pathname.startsWith("/funding")) return "funding";
+  if (pathname.startsWith("/education")) return "education";
+  return "analytics";
+}
+
 export function ProductProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [product, setProduct] = useState<Product>("analytics");
+  const pathname = usePathname();
+  const [product, setProduct] = useState<Product>(() =>
+    getProductFromPathname(pathname)
+  );
+
+  useEffect(() => {
+    setProduct(getProductFromPathname(pathname));
+  }, [pathname]);
 
   return (
     <Context.Provider value={{ product, setProduct }}>
@@ -34,3 +49,5 @@ export function useProduct() {
 
   return value;
 }
+
+export default ProductProvider;

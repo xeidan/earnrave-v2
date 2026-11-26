@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -39,7 +40,7 @@ export default function DesktopNavbar() {
           {/* Top Navigation */}
           <div className="flex h-[78px] items-center justify-between px-7">
             {/* Logo */}
-            <a
+            <Link
               href="/"
               aria-label="EarnRave home"
               className="w-[205px] shrink-0"
@@ -51,7 +52,7 @@ export default function DesktopNavbar() {
                 height={42}
                 priority
               />
-            </a>
+            </Link>
 
             {/* Four Product Pillars */}
             <div className="flex flex-1 justify-center">
@@ -60,14 +61,14 @@ export default function DesktopNavbar() {
 
             {/* Account Actions */}
             <div className="flex w-[205px] shrink-0 items-center justify-end gap-5">
-              <a
+              <Link
                 href="/login"
                 className="text-sm font-medium text-neutral-400 transition hover:text-white"
               >
                 Log in
-              </a>
+              </Link>
 
-              <a
+              <Link
                 href="/signup"
                 className="group inline-flex h-11 items-center gap-3 rounded-xl border border-white/10 bg-white px-5 text-sm font-semibold text-black transition-all duration-300 hover:bg-[#e8f5f2] hover:shadow-[0_0_24px_rgba(0,210,177,0.08)]"
               >
@@ -76,7 +77,7 @@ export default function DesktopNavbar() {
                   size={15}
                   className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                 />
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -86,7 +87,7 @@ export default function DesktopNavbar() {
           {/* Secondary Navigation */}
           <div className="flex h-[56px] items-center justify-center gap-10">
             {(links?.items ?? []).map((item) => (
-              <a
+              <Link
                 key={item.label}
                 href={item.href}
                 className={`text-[13px] font-medium transition ${
@@ -96,7 +97,7 @@ export default function DesktopNavbar() {
                 }`}
               >
                 {item.label}
-              </a>
+              </Link>
             ))}
           </div>
         </div>

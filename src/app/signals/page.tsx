@@ -1,5 +1,7 @@
 "use client";
 
+import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Navbar from "@/components/layout/Navbar";
@@ -17,6 +19,12 @@ import {
   TrendingUp,
   X,
 } from "lucide-react";
+
+const SECTION_VIEWPORT = { once: true, amount: "some" as const };
+const SECTION_TRANSITION = {
+  duration: 0.95,
+  ease: [0.22, 1, 0.36, 1] as const,
+};
 
 type MarketType = "All" | "Forex" | "Crypto" | "Gold";
 
@@ -175,13 +183,19 @@ const PROGRESS_POINTS = [
   0, 2.1, 1.1, 3.8, 6.2, 5.2, 8.4, 11.2, 10.2, 14.0, 17.5, 21.8, 26.4, 32.8,
 ];
 
-function BorderTrace() {
+function BorderTrace({ duration = 22 }: { duration?: number }) {
   return (
     <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden rounded-[inherit]">
       <motion.div
-        className="absolute top-0 h-px w-28 bg-gradient-to-r from-transparent via-[#00D2B1] to-transparent shadow-[0_0_10px_rgba(0,210,177,0.5)]"
-        animate={{ x: ["-140px", "calc(100% + 140px)"] }}
-        transition={{ duration: 6.5, repeat: Infinity, ease: "linear" }}
+        className="absolute top-0 h-px w-36 -translate-x-full bg-gradient-to-r from-transparent via-[#00D2B1]/80 to-transparent shadow-[0_0_12px_rgba(0,210,177,0.45)]"
+        initial={{ left: "0%" }}
+        animate={{ left: "135%" }}
+        transition={{
+          duration,
+          repeat: Infinity,
+          repeatDelay: 2.5,
+          ease: "linear",
+        }}
       />
     </div>
   );
@@ -234,16 +248,537 @@ function ProgressChart() {
   );
 }
 
-export default function SignalsPage() {
+function LiveIdeasSection({
+  onSelectIdea,
+}: {
+  onSelectIdea: (idea: TradeIdea) => void;
+}) {
   const [selectedMarket, setSelectedMarket] = useState<MarketType>("All");
-  const [selectedIdea, setSelectedIdea] = useState<TradeIdea | null>(null);
-  const [accountBalance, setAccountBalance] = useState<string>("5000");
-  const [riskPercent, setRiskPercent] = useState<string>("1");
 
   const visibleIdeas = useMemo(() => {
     if (selectedMarket === "All") return TRADE_IDEAS;
     return TRADE_IDEAS.filter((item) => item.market === selectedMarket);
   }, [selectedMarket]);
+
+  return (
+    <motion.section
+      id="live-ideas"
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={SECTION_VIEWPORT}
+      transition={SECTION_TRANSITION}
+      className="scroll-mt-24 border-y border-white/[0.06] bg-[#090C0C] px-5 py-24 sm:py-28"
+    >
+      <div className="mx-auto max-w-7xl">
+        <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+          <div>
+            <p className="text-[11px] font-medium tracking-[.18em] text-[#00D2B1]">
+              01 / TRADE IDEAS
+            </p>
+            <h2 className="mt-4 text-3xl font-medium tracking-[-.05em] text-white sm:text-5xl">
+              Simple plans.
+              <span className="text-neutral-500"> No guessing.</span>
+            </h2>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {(["All", "Forex", "Crypto", "Gold"] as MarketType[]).map(
+              (market) => (
+                <button
+                  key={market}
+                  type="button"
+                  onClick={() => setSelectedMarket(market)}
+                  className={`rounded-lg border px-3.5 py-2 text-xs font-medium transition-colors duration-300 ${
+                    selectedMarket === market
+                      ? "border-[#00D2B1]/40 bg-[#00D2B1]/[0.08] text-[#00D2B1]"
+                      : "border-white/[0.07] bg-[#0D1110] text-neutral-400 hover:border-white/[0.15] hover:text-white"
+                  }`}
+                >
+                  {market}
+                </button>
+              )
+            )}
+          </div>
+        </div>
+
+        <div className="mt-12 grid gap-4 md:grid-cols-2">
+          {visibleIdeas.map((idea) => {
+            const isBuy = idea.action === "BUY";
+
+            return (
+              <div
+                key={idea.id}
+                className="group relative flex flex-col justify-between rounded-2xl border border-white/[0.07] bg-[#0D1110] p-6 transition-colors duration-300 hover:border-[#00D2B1]/25 sm:p-7"
+              >
+                <div>
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <span className="font-mono text-[11px] text-neutral-600">
+                        {idea.id}
+                      </span>
+                      <h3 className="text-xl font-medium tracking-tight text-white">
+                        {idea.pair}
+                      </h3>
+                      <span
+                        className={`rounded-md px-2.5 py-0.5 text-[10px] font-semibold tracking-wider ${
+                          isBuy
+                            ? "bg-[#00D2B1]/10 text-[#00D2B1]"
+                            : "bg-red-400/10 text-red-400"
+                        }`}
+                      >
+                        {idea.action}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <span className="flex items-center gap-1 text-[11px] text-neutral-500">
+                        <Clock size={12} />
+                        {idea.postedAgo}
+                      </span>
+                      <span className="flex items-center gap-1.5 rounded-full border border-[#00D2B1]/20 bg-[#00D2B1]/[0.06] px-2.5 py-0.5 text-[10px] font-medium text-[#00D2B1]">
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#00D2B1]" />
+                        {idea.status}
+                      </span>
+                    </div>
+                  </div>
+
+                  <p className="mt-4 text-sm leading-6 text-neutral-400">
+                    {idea.simpleReason}
+                  </p>
+
+                  <div className="mt-6 grid grid-cols-3 gap-3 rounded-xl border border-white/[0.05] bg-[#090C0B] p-4">
+                    <div>
+                      <p className="text-[10px] tracking-wider text-neutral-600">
+                        START PRICE
+                      </p>
+                      <p className="mt-1.5 font-mono text-xs font-medium text-white sm:text-sm">
+                        {idea.entry}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] tracking-wider text-neutral-600">
+                        STOP LOSS
+                      </p>
+                      <p className="mt-1.5 font-mono text-xs font-medium text-red-400 sm:text-sm">
+                        {idea.stopLoss}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] tracking-wider text-neutral-600">
+                        PROFIT GOAL
+                      </p>
+                      <p className="mt-1.5 font-mono text-xs font-medium text-[#00D2B1] sm:text-sm">
+                        {idea.takeProfit}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 flex items-center justify-between border-t border-white/[0.06] pt-4">
+                  <div className="flex items-center gap-3 text-xs text-neutral-500">
+                    <span>{idea.chartView}</span>
+                    <span>·</span>
+                    <span>{idea.bestTime}</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => onSelectIdea(idea)}
+                    className="inline-flex items-center gap-2 rounded-lg border border-white/[0.1] bg-white/[0.03] px-3.5 py-2 text-xs font-medium text-white transition-colors duration-300 hover:border-[#00D2B1]/40 hover:bg-[#00D2B1] hover:text-[#04110E]"
+                  >
+                    <Calculator size={13} />
+                    Size &amp; details
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </motion.section>
+  );
+}
+
+function ExecutionModesSection() {
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={SECTION_VIEWPORT}
+      transition={SECTION_TRANSITION}
+      className="px-5 py-24 sm:py-28"
+    >
+      <div className="mx-auto max-w-7xl">
+        <div className="grid gap-8 lg:grid-cols-[1fr_.85fr] lg:items-end">
+          <div>
+            <p className="text-[11px] font-medium tracking-[.18em] text-[#00D2B1]">
+              02 / HOW YOU TRADE
+            </p>
+            <h2 className="mt-4 text-3xl font-medium leading-[1.1] tracking-[-.05em] text-white sm:text-5xl">
+              Place trades yourself today.
+              <span className="block text-neutral-500">
+                Trading bot coming soon.
+              </span>
+            </h2>
+          </div>
+
+          <p className="max-w-md text-sm leading-7 text-neutral-400">
+            Start by placing trades yourself in your trading app. We are also
+            building an optional trading bot to help place trades for you with
+            safety limits you set.
+          </p>
+        </div>
+
+        <div className="mt-12 grid gap-4 lg:grid-cols-2">
+          <div className="relative overflow-hidden rounded-2xl border border-[#00D2B1]/30 bg-[#0D1312] p-7 sm:p-9">
+            <BorderTrace />
+
+            <div className="flex items-center justify-between">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#00D2B1]/20 bg-[#00D2B1]/[0.06]">
+                <Crosshair size={18} className="text-[#00D2B1]" />
+              </div>
+              <span className="rounded-full border border-[#00D2B1]/20 bg-[#00D2B1]/[0.08] px-3 py-1 text-[10px] font-medium text-[#00D2B1]">
+                AVAILABLE NOW
+              </span>
+            </div>
+
+            <h3 className="mt-7 text-2xl font-medium tracking-tight text-white">
+              Do It Yourself (Manual)
+            </h3>
+            <p className="mt-3 text-sm leading-7 text-neutral-400">
+              Get a clear alert with the start price, stop-loss, and profit
+              goal. You decide if you want to take the trade and enter it on
+              your own account.
+            </p>
+
+            <div className="mt-7 flex items-center gap-2 text-xs font-medium text-[#00D2B1]">
+              <Check size={14} /> Included with Signals
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-white/[0.07] bg-[#0C0F0F] p-7 sm:p-9">
+            <div className="flex items-center justify-between">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.03]">
+                <Bot size={18} className="text-[#00D2B1]" />
+              </div>
+              <span className="rounded-full border border-[#00D2B1]/20 bg-[#00D2B1]/[0.06] px-3 py-1 text-[10px] font-medium text-[#00D2B1]">
+                COMING SOON
+              </span>
+            </div>
+
+            <h3 className="mt-7 text-2xl font-medium tracking-tight text-white">
+              Auto Trading Bot — Coming Soon
+            </h3>
+            <p className="mt-3 text-sm leading-7 text-neutral-400">
+              Soon, you will be able to connect a supported account and let our
+              bot place matching trades automatically and only up to the daily
+              loss limit you set.
+            </p>
+
+            <div className="mt-7 flex items-center gap-2 text-xs font-medium text-neutral-400">
+              In development · You stay in control of your risk limits
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.section>
+  );
+}
+
+function PastResultsSection() {
+  return (
+    <motion.section
+      id="results"
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={SECTION_VIEWPORT}
+      transition={SECTION_TRANSITION}
+      className="scroll-mt-24 border-y border-white/[0.06] bg-[#090C0C] px-5 py-24 sm:py-28"
+    >
+      <div className="mx-auto max-w-7xl">
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <p className="text-[11px] font-medium tracking-[.18em] text-[#00D2B1]">
+              03 / PAST RESULTS
+            </p>
+            <h2 className="mt-4 text-3xl font-medium tracking-[-.05em] text-white sm:text-5xl">
+              Wins and losses.
+              <span className="text-neutral-500"> Shown plainly.</span>
+            </h2>
+          </div>
+
+          <span className="rounded-lg border border-white/[0.08] bg-[#0D1110] px-3.5 py-2 text-[11px] text-neutral-400">
+            Sample past trades · Based on 1x risk per trade
+          </span>
+        </div>
+
+        <div className="mt-12 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {[
+            {
+              label: "Total Net Gain",
+              value: "+32.8x",
+              sub: "If risking 1x per trade",
+              accent: true,
+            },
+            {
+              label: "Average Per Trade",
+              value: "+0.84x",
+              sub: "Average result across trades",
+              accent: true,
+            },
+            {
+              label: "Winning Trades",
+              value: "61.5%",
+              sub: "Out of 146 past trades",
+              accent: false,
+            },
+            {
+              label: "Biggest Dip",
+              value: "-3.2x",
+              sub: "Largest drop from a peak",
+              accent: false,
+            },
+          ].map((stat) => (
+            <div
+              key={stat.label}
+              className="rounded-2xl border border-white/[0.07] bg-[#0D1110] p-6"
+            >
+              <p className="text-xs text-neutral-500">{stat.label}</p>
+              <p
+                className={`mt-3 text-3xl font-medium tracking-[-.04em] ${
+                  stat.accent ? "text-[#00D2B1]" : "text-white"
+                }`}
+              >
+                {stat.value}
+              </p>
+              <p className="mt-2 text-xs text-neutral-600">{stat.sub}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-5 grid gap-5 lg:grid-cols-[1.25fr_.75fr]">
+          <div className="rounded-2xl border border-white/[0.07] bg-[#0D1110] p-6 sm:p-8">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm font-medium text-white">
+                  Sample Growth Line
+                </p>
+                <p className="mt-1 text-xs text-neutral-500">
+                  Shows how small wins and small losses add up over time
+                </p>
+              </div>
+              <div className="flex items-center gap-1.5 rounded-md border border-[#00D2B1]/15 bg-[#00D2B1]/[0.06] px-2.5 py-1 text-xs text-[#00D2B1]">
+                <TrendingUp size={13} />
+                +32.8x
+              </div>
+            </div>
+
+            <div className="mt-8 h-[220px]">
+              <ProgressChart />
+            </div>
+
+            <div className="mt-4 flex justify-between text-[10px] tracking-wider text-neutral-600">
+              <span>TRADE 1</span>
+              <span>TRADE 50</span>
+              <span>TRADE 100</span>
+              <span>TRADE 146</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col justify-between rounded-2xl border border-white/[0.07] bg-[#0D1110] p-6">
+            <div>
+              <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
+                <div>
+                  <p className="text-sm font-medium text-white">
+                    Recent Finished Trades
+                  </p>
+                  <p className="mt-1 text-xs text-neutral-500">
+                    Includes both wins and losses
+                  </p>
+                </div>
+                <Layers size={15} className="text-neutral-500" />
+              </div>
+
+              <div className="mt-2 divide-y divide-white/[0.05]">
+                {PAST_TRADES.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between py-3.5 text-xs"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-white">
+                          {item.pair}
+                        </span>
+                        <span
+                          className={`text-[10px] ${
+                            item.action === "BUY"
+                              ? "text-[#00D2B1]"
+                              : "text-red-400"
+                          }`}
+                        >
+                          {item.action}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-[11px] text-neutral-600">
+                        {item.date} · Goal {item.goalLabel}
+                      </p>
+                    </div>
+
+                    <span
+                      className={`rounded-md px-2.5 py-1 font-mono font-semibold ${
+                        item.won
+                          ? "bg-[#00D2B1]/10 text-[#00D2B1]"
+                          : "bg-red-400/10 text-red-400"
+                      }`}
+                    >
+                      {item.resultLabel}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <p className="mt-4 border-t border-white/[0.05] pt-4 text-[11px] leading-5 text-neutral-600">
+              Trading carries risk. Past trades are examples and do not mean
+              future trades will have the same results.
+            </p>
+          </div>
+        </div>
+      </div>
+    </motion.section>
+  );
+}
+
+function PricingSection() {
+  return (
+    <motion.section
+      id="pricing"
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={SECTION_VIEWPORT}
+      transition={SECTION_TRANSITION}
+      className="scroll-mt-24 px-5 py-24 sm:py-28"
+    >
+      <div className="mx-auto max-w-7xl">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="text-[11px] font-medium tracking-[.18em] text-[#00D2B1]">
+            04 / PRICING
+          </p>
+          <h2 className="mt-4 text-3xl font-medium tracking-[-.05em] text-white sm:text-5xl">
+            Signals for $20 a month.
+          </h2>
+          <p className="mt-4 text-sm leading-7 text-neutral-400">
+            One clear price for trade ideas, simple notes, and a trade size
+            calculator.
+          </p>
+        </div>
+
+        <div className="mx-auto mt-14 grid max-w-5xl gap-5 md:grid-cols-2">
+          {/* SIGNALS $20/MO */}
+          <div className="relative flex flex-col justify-between overflow-hidden rounded-3xl border border-[#00D2B1]/30 bg-[#0D1312] p-8 sm:p-10">
+            <BorderTrace />
+
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-medium tracking-[.18em] text-[#00D2B1]">
+                  SIGNALS PLAN
+                </span>
+                <span className="rounded-full bg-[#00D2B1]/15 px-3 py-1 text-xs font-semibold text-[#00D2B1]">
+                  $20 / month
+                </span>
+              </div>
+
+              <h3 className="mt-4 text-3xl font-medium tracking-tight text-white">
+                Signals
+              </h3>
+              <p className="mt-3 text-sm leading-6 text-neutral-400">
+                Get trade ideas for Forex, Crypto, and Gold with clear stop and
+                profit levels.
+              </p>
+
+              <ul className="mt-8 space-y-4 border-t border-white/[0.07] pt-7 text-sm text-neutral-200">
+                {[
+                  "Trade ideas with start, stop-loss, and profit levels",
+                  "Plain reasons explaining each trade idea",
+                  "Trade size calculator to help you risk safely",
+                  "Early access to the trading bot when it launches",
+                ].map((feature) => (
+                  <li key={feature} className="flex items-center gap-3">
+                    <Check size={15} className="shrink-0 text-[#00D2B1]" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <a
+              href="mailto:hello@earnrave.com?subject=EARNRAVE%20Signals%20(%2420%2Fmonth)"
+              className="mt-9 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#00D2B1] text-sm font-medium text-[#04110E] transition hover:bg-[#4AE6CD] hover:shadow-[0_0_28px_rgba(0,210,177,0.2)]"
+            >
+              Start Signals — $20/mo
+              <ArrowUpRight size={15} />
+            </a>
+          </div>
+
+          {/* BOT COMING SOON CARD */}
+          <div className="flex flex-col justify-between rounded-3xl border border-white/[0.08] bg-[#0C0F0F] p-8 sm:p-10">
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-medium tracking-[.18em] text-neutral-500">
+                  AUTOMATION
+                </span>
+                <span className="rounded-full border border-[#00D2B1]/20 bg-[#00D2B1]/[0.06] px-3 py-1 text-[10px] font-medium text-[#00D2B1]">
+                  COMING SOON
+                </span>
+              </div>
+
+              <h3 className="mt-4 text-3xl font-medium tracking-tight text-white">
+                Trading Bot
+              </h3>
+              <p className="mt-3 text-sm leading-6 text-neutral-400">
+                We are building a bot that can place trades for you based on
+                your own safety rules.
+              </p>
+
+              <ul className="mt-8 space-y-4 border-t border-white/[0.06] pt-7 text-sm text-neutral-300">
+                {[
+                  "Set your own max risk per trade",
+                  "Set a daily stop so losses stay capped",
+                  "Turn auto-trading on or off anytime",
+                  "Signals members get notified first when ready",
+                ].map((feature) => (
+                  <li key={feature} className="flex items-center gap-3">
+                    <Check size={15} className="shrink-0 text-[#00D2B1]" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <Link
+              href="/education"
+              className="mt-9 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-white/[0.12] bg-white/[0.03] text-sm font-medium text-white transition hover:border-[#00D2B1]/40 hover:bg-white/[0.06]"
+            >
+              Learn basics in Education first
+              <ArrowRight size={15} />
+            </Link>
+          </div>
+        </div>
+      </div>
+    </motion.section>
+  );
+}
+
+function TradeSizeDrawer({
+  selectedIdea,
+  onClose,
+}: {
+  selectedIdea: TradeIdea | null;
+  onClose: () => void;
+}) {
+  const [accountBalance, setAccountBalance] = useState<string>("5000");
+  const [riskPercent, setRiskPercent] = useState<string>("1");
 
   const sizePlan = useMemo(() => {
     const balance = Math.max(0, parseFloat(accountBalance) || 0);
@@ -267,12 +802,231 @@ export default function SignalsPage() {
   }, [accountBalance, riskPercent, selectedIdea]);
 
   return (
+    <AnimatePresence>
+      {selectedIdea && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          onClick={onClose}
+          className="fixed inset-0 z-[100] flex items-center justify-end bg-black/75 backdrop-blur-sm"
+        >
+          <motion.div
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            onClick={(e) => e.stopPropagation()}
+            className="flex h-full w-full max-w-lg flex-col justify-between overflow-y-auto border-l border-white/[0.1] bg-[#0B0E0E] p-6 sm:p-8"
+          >
+            <div>
+              <div className="flex items-center justify-between border-b border-white/[0.07] pb-5">
+                <div>
+                  <div className="flex items-center gap-2.5">
+                    <span className="font-mono text-xs text-neutral-500">
+                      {selectedIdea.id}
+                    </span>
+                    <span
+                      className={`rounded px-2 py-0.5 text-[10px] font-semibold ${
+                        selectedIdea.action === "BUY"
+                          ? "bg-[#00D2B1]/10 text-[#00D2B1]"
+                          : "bg-red-400/10 text-red-400"
+                      }`}
+                    >
+                      {selectedIdea.action}
+                    </span>
+                  </div>
+                  <h3 className="mt-2 text-2xl font-medium tracking-tight text-white">
+                    {selectedIdea.pair} Details
+                  </h3>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.03] text-neutral-400 transition hover:text-white"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.45,
+                  delay: 0.1,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className="mt-6 grid grid-cols-3 gap-3"
+              >
+                <div className="rounded-xl border border-white/[0.06] bg-[#101414] p-3.5">
+                  <p className="text-[10px] text-neutral-500">START</p>
+                  <p className="mt-1.5 font-mono text-sm font-semibold text-white">
+                    {selectedIdea.entry}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-white/[0.06] bg-[#101414] p-3.5">
+                  <p className="text-[10px] text-neutral-500">STOP LOSS</p>
+                  <p className="mt-1.5 font-mono text-sm font-semibold text-red-400">
+                    {selectedIdea.stopLoss}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-white/[0.06] bg-[#101414] p-3.5">
+                  <p className="text-[10px] text-neutral-500">PROFIT GOAL</p>
+                  <p className="mt-1.5 font-mono text-sm font-semibold text-[#00D2B1]">
+                    {selectedIdea.takeProfit}
+                  </p>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.45,
+                  delay: 0.2,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className="mt-6 space-y-4 rounded-2xl border border-white/[0.06] bg-[#101414] p-5"
+              >
+                <div>
+                  <p className="text-[10px] font-medium tracking-[.15em] text-[#00D2B1]">
+                    WHY THIS TRADE
+                  </p>
+                  <p className="mt-2 text-xs leading-6 text-neutral-300">
+                    {selectedIdea.simpleReason}
+                  </p>
+                </div>
+
+                <div className="border-t border-white/[0.06] pt-3.5">
+                  <p className="text-[10px] font-medium tracking-[.15em] text-neutral-500">
+                    EXIT IF WRONG
+                  </p>
+                  <p className="mt-1.5 text-xs text-neutral-400">
+                    {selectedIdea.stopRule}
+                  </p>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.45,
+                  delay: 0.3,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className="mt-6 rounded-2xl border border-[#00D2B1]/20 bg-[#00D2B1]/[0.03] p-5"
+              >
+                <div className="flex items-center gap-2 text-xs font-medium text-[#00D2B1]">
+                  <Calculator size={15} />
+                  Trade Size Helper
+                </div>
+
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] tracking-wider text-neutral-500">
+                      YOUR ACCOUNT ($)
+                    </label>
+                    <input
+                      type="number"
+                      value={accountBalance}
+                      onChange={(e) => setAccountBalance(e.target.value)}
+                      className="mt-1.5 w-full rounded-lg border border-white/[0.1] bg-[#0A0D0D] px-3 py-2 font-mono text-xs text-white outline-none focus:border-[#00D2B1]/50"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] tracking-wider text-neutral-500">
+                      RISK PER TRADE (%)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.25"
+                      value={riskPercent}
+                      onChange={(e) => setRiskPercent(e.target.value)}
+                      className="mt-1.5 w-full rounded-lg border border-white/[0.1] bg-[#0A0D0D] px-3 py-2 font-mono text-xs text-white outline-none focus:border-[#00D2B1]/50"
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-4 grid grid-cols-3 gap-2 border-t border-white/[0.07] pt-4 text-xs">
+                  <div>
+                    <p className="text-[10px] text-neutral-500">MAX LOSS ($)</p>
+                    <p className="mt-1 font-mono font-semibold text-white">
+                      $
+                      {sizePlan.riskMoney.toLocaleString(undefined, {
+                        maximumFractionDigits: 0,
+                      })}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-neutral-500">TRADE SIZE</p>
+                    <p className="mt-1 font-mono font-semibold text-[#00D2B1]">
+                      {sizePlan.tradeSize}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-neutral-500">3X GAIN ($)</p>
+                    <p className="mt-1 font-mono font-semibold text-[#00D2B1]">
+                      +$
+                      {sizePlan.goalMoney.toLocaleString(undefined, {
+                        maximumFractionDigits: 0,
+                      })}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+
+            <div className="mt-8 border-t border-white/[0.06] pt-5">
+              <p className="text-[11px] leading-5 text-neutral-500">
+                For learning and planning only. Always check your account
+                balance and risk rules before placing a trade.
+              </p>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+const LazyLiveIdeasSection = dynamic(() => Promise.resolve(LiveIdeasSection), {
+  ssr: true,
+});
+const LazyExecutionModesSection = dynamic(
+  () => Promise.resolve(ExecutionModesSection),
+  { ssr: true }
+);
+const LazyPastResultsSection = dynamic(
+  () => Promise.resolve(PastResultsSection),
+  { ssr: true }
+);
+const LazyPricingSection = dynamic(() => Promise.resolve(PricingSection), {
+  ssr: true,
+});
+const LazyTradeSizeDrawer = dynamic(() => Promise.resolve(TradeSizeDrawer), {
+  ssr: false,
+});
+
+export default function SignalsPage() {
+  const [selectedIdea, setSelectedIdea] = useState<TradeIdea | null>(null);
+
+  return (
     <>
       <Navbar />
 
       <main className="min-h-screen overflow-hidden bg-[radial-gradient(ellipse_at_50%_0%,rgba(0,210,177,0.06),transparent_42%),#080A0A] text-white">
         {/* HERO */}
-        <section className="relative px-5 pb-20 pt-36 lg:pb-28 lg:pt-52">
+        <motion.section
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={SECTION_TRANSITION}
+          className="relative px-5 pb-20 pt-36 lg:pb-28 lg:pt-52"
+        >
           <div className="pointer-events-none absolute left-1/2 top-24 h-[380px] w-[680px] -translate-x-1/2 rounded-full bg-[#00D2B1]/[0.04] blur-[130px]" />
 
           <div className="relative mx-auto max-w-7xl">
@@ -281,7 +1035,7 @@ export default function SignalsPage() {
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.55 }}
+                transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
               >
                 <div className="flex items-center gap-2 text-[11px] font-medium tracking-[.18em] text-[#00D2B1]">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#00D2B1]" />
@@ -303,7 +1057,7 @@ export default function SignalsPage() {
                 <div className="mt-10 flex flex-wrap items-center gap-4">
                   <a
                     href="#live-ideas"
-                    className="inline-flex h-12 items-center gap-2 rounded-lg bg-[#00D2B1] px-6 text-sm font-medium text-[#04110E] transition hover:bg-[#4AE6CD]"
+                    className="inline-flex h-12 items-center gap-2 rounded-lg bg-[#00D2B1] px-6 text-sm font-medium text-[#04110E] transition hover:bg-[#4AE6CD] hover:shadow-[0_0_24px_rgba(0,210,177,0.22)]"
                   >
                     See trade ideas
                     <ArrowUpRight size={15} />
@@ -350,7 +1104,11 @@ export default function SignalsPage() {
               <motion.div
                 initial={{ opacity: 0, y: 18 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15, duration: 0.6 }}
+                transition={{
+                  delay: 0.25,
+                  duration: 0.9,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
                 className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0C0F0F] p-6 sm:p-7"
               >
                 <BorderTrace />
@@ -375,7 +1133,7 @@ export default function SignalsPage() {
                         key={idea.id}
                         type="button"
                         onClick={() => setSelectedIdea(idea)}
-                        className="group flex w-full items-center justify-between rounded-xl border border-white/[0.06] bg-[#101414] p-4 text-left transition hover:border-[#00D2B1]/30"
+                        className="group flex w-full items-center justify-between rounded-xl border border-white/[0.06] bg-[#101414] p-4 text-left transition-colors duration-300 hover:border-[#00D2B1]/30"
                       >
                         <div>
                           <div className="flex items-center gap-2.5">
@@ -420,652 +1178,16 @@ export default function SignalsPage() {
               </motion.div>
             </div>
           </div>
-        </section>
+        </motion.section>
 
-        {/* 01 / TRADE IDEAS */}
-        <section
-          id="live-ideas"
-          className="scroll-mt-24 border-y border-white/[0.06] bg-[#090C0C] px-5 py-24 sm:py-28"
-        >
-          <div className="mx-auto max-w-7xl">
-            <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
-              <div>
-                <p className="text-[11px] font-medium tracking-[.18em] text-[#00D2B1]">
-                  01 / TRADE IDEAS
-                </p>
-                <h2 className="mt-4 text-3xl font-medium tracking-[-.05em] text-white sm:text-5xl">
-                  Simple plans.
-                  <span className="text-neutral-500"> No guessing.</span>
-                </h2>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                {(["All", "Forex", "Crypto", "Gold"] as MarketType[]).map(
-                  (market) => (
-                    <button
-                      key={market}
-                      type="button"
-                      onClick={() => setSelectedMarket(market)}
-                      className={`rounded-lg border px-3.5 py-2 text-xs font-medium transition ${
-                        selectedMarket === market
-                          ? "border-[#00D2B1]/40 bg-[#00D2B1]/[0.08] text-[#00D2B1]"
-                          : "border-white/[0.07] bg-[#0D1110] text-neutral-400 hover:border-white/[0.15] hover:text-white"
-                      }`}
-                    >
-                      {market}
-                    </button>
-                  )
-                )}
-              </div>
-            </div>
-
-            <div className="mt-12 grid gap-4 md:grid-cols-2">
-              {visibleIdeas.map((idea) => {
-                const isBuy = idea.action === "BUY";
-
-                return (
-                  <div
-                    key={idea.id}
-                    className="group relative flex flex-col justify-between rounded-2xl border border-white/[0.07] bg-[#0D1110] p-6 transition-all duration-200 hover:border-[#00D2B1]/25 sm:p-7"
-                  >
-                    <div>
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <span className="font-mono text-[11px] text-neutral-600">
-                            {idea.id}
-                          </span>
-                          <h3 className="text-xl font-medium tracking-tight text-white">
-                            {idea.pair}
-                          </h3>
-                          <span
-                            className={`rounded-md px-2.5 py-0.5 text-[10px] font-semibold tracking-wider ${
-                              isBuy
-                                ? "bg-[#00D2B1]/10 text-[#00D2B1]"
-                                : "bg-red-400/10 text-red-400"
-                            }`}
-                          >
-                            {idea.action}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          <span className="flex items-center gap-1 text-[11px] text-neutral-500">
-                            <Clock size={12} />
-                            {idea.postedAgo}
-                          </span>
-                          <span className="flex items-center gap-1.5 rounded-full border border-[#00D2B1]/20 bg-[#00D2B1]/[0.06] px-2.5 py-0.5 text-[10px] font-medium text-[#00D2B1]">
-                            <span className="h-1.5 w-1.5 rounded-full bg-[#00D2B1]" />
-                            {idea.status}
-                          </span>
-                        </div>
-                      </div>
-
-                      <p className="mt-4 text-sm leading-6 text-neutral-400">
-                        {idea.simpleReason}
-                      </p>
-
-                      <div className="mt-6 grid grid-cols-3 gap-3 rounded-xl border border-white/[0.05] bg-[#090C0B] p-4">
-                        <div>
-                          <p className="text-[10px] tracking-wider text-neutral-600">
-                            START PRICE
-                          </p>
-                          <p className="mt-1.5 font-mono text-xs font-medium text-white sm:text-sm">
-                            {idea.entry}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] tracking-wider text-neutral-600">
-                            STOP LOSS
-                          </p>
-                          <p className="mt-1.5 font-mono text-xs font-medium text-red-400 sm:text-sm">
-                            {idea.stopLoss}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] tracking-wider text-neutral-600">
-                            PROFIT GOAL
-                          </p>
-                          <p className="mt-1.5 font-mono text-xs font-medium text-[#00D2B1] sm:text-sm">
-                            {idea.takeProfit}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-6 flex items-center justify-between border-t border-white/[0.06] pt-4">
-                      <div className="flex items-center gap-3 text-xs text-neutral-500">
-                        <span>{idea.chartView}</span>
-                        <span>·</span>
-                        <span>{idea.bestTime}</span>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => setSelectedIdea(idea)}
-                        className="inline-flex items-center gap-2 rounded-lg border border-white/[0.1] bg-white/[0.03] px-3.5 py-2 text-xs font-medium text-white transition hover:border-[#00D2B1]/40 hover:bg-[#00D2B1] hover:text-[#04110E]"
-                      >
-                        <Calculator size={13} />
-                        Size &amp; details
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        {/* 02 / HOW YOU PLACE TRADES + BOT COMING SOON */}
-        <section className="px-5 py-24 sm:py-28">
-          <div className="mx-auto max-w-7xl">
-            <div className="grid gap-8 lg:grid-cols-[1fr_.85fr] lg:items-end">
-              <div>
-                <p className="text-[11px] font-medium tracking-[.18em] text-[#00D2B1]">
-                  02 / HOW YOU TRADE
-                </p>
-                <h2 className="mt-4 text-3xl font-medium leading-[1.1] tracking-[-.05em] text-white sm:text-5xl">
-                  Place trades yourself today.
-                  <span className="block text-neutral-500">
-                    Trading bot coming soon.
-                  </span>
-                </h2>
-              </div>
-
-              <p className="max-w-md text-sm leading-7 text-neutral-400">
-                Start by placing trades yourself in your trading app. We are
-                also building an optional trading bot to help place trades for
-                you with safety limits you set.
-              </p>
-            </div>
-
-            <div className="mt-12 grid gap-4 lg:grid-cols-2">
-              <div className="rounded-2xl border border-[#00D2B1]/40 bg-[#0D1312] p-7 sm:p-9">
-                <div className="flex items-center justify-between">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#00D2B1]/20 bg-[#00D2B1]/[0.06]">
-                    <Crosshair size={18} className="text-[#00D2B1]" />
-                  </div>
-                  <span className="rounded-full border border-[#00D2B1]/20 bg-[#00D2B1]/[0.08] px-3 py-1 text-[10px] font-medium text-[#00D2B1]">
-                    AVAILABLE NOW
-                  </span>
-                </div>
-
-                <h3 className="mt-7 text-2xl font-medium tracking-tight text-white">
-                  Do It Yourself (Manual)
-                </h3>
-                <p className="mt-3 text-sm leading-7 text-neutral-400">
-                  Get a clear alert with the start price, stop-loss, and profit
-                  goal. You decide if you want to take the trade and enter it on
-                  your own account.
-                </p>
-
-                <div className="mt-7 flex items-center gap-2 text-xs font-medium text-[#00D2B1]">
-                  <Check size={14} /> Included with Signals
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-white/[0.07] bg-[#0C0F0F] p-7 sm:p-9">
-                <div className="flex items-center justify-between">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.03]">
-                    <Bot size={18} className="text-[#00D2B1]" />
-                  </div>
-                  <span className="rounded-full border border-[#00D2B1]/20 bg-[#00D2B1]/[0.06] px-3 py-1 text-[10px] font-medium text-[#00D2B1]">
-                    COMING SOON
-                  </span>
-                </div>
-
-                <h3 className="mt-7 text-2xl font-medium tracking-tight text-white">
-                  Auto Trading Bot — Coming Soon
-                </h3>
-                <p className="mt-3 text-sm leading-7 text-neutral-400">
-                  Soon, you will be able to connect a supported account and let
-                  our bot place matching trades automatically and only up to the
-                  daily loss limit you set.
-                </p>
-
-                <div className="mt-7 flex items-center gap-2 text-xs font-medium text-neutral-400">
-                  In development · You stay in control of your risk limits
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 03 / PAST RESULTS */}
-        <section
-          id="results"
-          className="scroll-mt-24 border-y border-white/[0.06] bg-[#090C0C] px-5 py-24 sm:py-28"
-        >
-          <div className="mx-auto max-w-7xl">
-            <div className="flex flex-wrap items-end justify-between gap-6">
-              <div>
-                <p className="text-[11px] font-medium tracking-[.18em] text-[#00D2B1]">
-                  03 / PAST RESULTS
-                </p>
-                <h2 className="mt-4 text-3xl font-medium tracking-[-.05em] text-white sm:text-5xl">
-                  Wins and losses.
-                  <span className="text-neutral-500"> Shown plainly.</span>
-                </h2>
-              </div>
-
-              <span className="rounded-lg border border-white/[0.08] bg-[#0D1110] px-3.5 py-2 text-[11px] text-neutral-400">
-                Sample past trades · Based on 1x risk per trade
-              </span>
-            </div>
-
-            <div className="mt-12 grid grid-cols-2 gap-4 lg:grid-cols-4">
-              {[
-                {
-                  label: "Total Net Gain",
-                  value: "+32.8x",
-                  sub: "If risking 1x per trade",
-                  accent: true,
-                },
-                {
-                  label: "Average Per Trade",
-                  value: "+0.84x",
-                  sub: "Average result across trades",
-                  accent: true,
-                },
-                {
-                  label: "Winning Trades",
-                  value: "61.5%",
-                  sub: "Out of 146 past trades",
-                  accent: false,
-                },
-                {
-                  label: "Biggest Dip",
-                  value: "-3.2x",
-                  sub: "Largest drop from a peak",
-                  accent: false,
-                },
-              ].map((stat) => (
-                <div
-                  key={stat.label}
-                  className="rounded-2xl border border-white/[0.07] bg-[#0D1110] p-6"
-                >
-                  <p className="text-xs text-neutral-500">{stat.label}</p>
-                  <p
-                    className={`mt-3 text-3xl font-medium tracking-[-.04em] ${
-                      stat.accent ? "text-[#00D2B1]" : "text-white"
-                    }`}
-                  >
-                    {stat.value}
-                  </p>
-                  <p className="mt-2 text-xs text-neutral-600">{stat.sub}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-5 grid gap-5 lg:grid-cols-[1.25fr_.75fr]">
-              <div className="rounded-2xl border border-white/[0.07] bg-[#0D1110] p-6 sm:p-8">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-white">
-                      Sample Growth Line
-                    </p>
-                    <p className="mt-1 text-xs text-neutral-500">
-                      Shows how small wins and small losses add up over time
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1.5 rounded-md border border-[#00D2B1]/15 bg-[#00D2B1]/[0.06] px-2.5 py-1 text-xs text-[#00D2B1]">
-                    <TrendingUp size={13} />
-                    +32.8x
-                  </div>
-                </div>
-
-                <div className="mt-8 h-[220px]">
-                  <ProgressChart />
-                </div>
-
-                <div className="mt-4 flex justify-between text-[10px] tracking-wider text-neutral-600">
-                  <span>TRADE 1</span>
-                  <span>TRADE 50</span>
-                  <span>TRADE 100</span>
-                  <span>TRADE 146</span>
-                </div>
-              </div>
-
-              <div className="flex flex-col justify-between rounded-2xl border border-white/[0.07] bg-[#0D1110] p-6">
-                <div>
-                  <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
-                    <div>
-                      <p className="text-sm font-medium text-white">
-                        Recent Finished Trades
-                      </p>
-                      <p className="mt-1 text-xs text-neutral-500">
-                        Includes both wins and losses
-                      </p>
-                    </div>
-                    <Layers size={15} className="text-neutral-500" />
-                  </div>
-
-                  <div className="mt-2 divide-y divide-white/[0.05]">
-                    {PAST_TRADES.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center justify-between py-3.5 text-xs"
-                      >
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-white">
-                              {item.pair}
-                            </span>
-                            <span
-                              className={`text-[10px] ${
-                                item.action === "BUY"
-                                  ? "text-[#00D2B1]"
-                                  : "text-red-400"
-                              }`}
-                            >
-                              {item.action}
-                            </span>
-                          </div>
-                          <p className="mt-1 text-[11px] text-neutral-600">
-                            {item.date} · Goal {item.goalLabel}
-                          </p>
-                        </div>
-
-                        <span
-                          className={`rounded-md px-2.5 py-1 font-mono font-semibold ${
-                            item.won
-                              ? "bg-[#00D2B1]/10 text-[#00D2B1]"
-                              : "bg-red-400/10 text-red-400"
-                          }`}
-                        >
-                          {item.resultLabel}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <p className="mt-4 border-t border-white/[0.05] pt-4 text-[11px] leading-5 text-neutral-600">
-                  Trading carries risk. Past trades are examples and do not mean
-                  future trades will have the same results.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 04 / $20 PER MONTH PLAN */}
-        <section id="pricing" className="scroll-mt-24 px-5 py-24 sm:py-28">
-          <div className="mx-auto max-w-7xl">
-            <div className="mx-auto max-w-2xl text-center">
-              <p className="text-[11px] font-medium tracking-[.18em] text-[#00D2B1]">
-                04 / PRICING
-              </p>
-              <h2 className="mt-4 text-3xl font-medium tracking-[-.05em] text-white sm:text-5xl">
-                Signals for $20 a month.
-              </h2>
-              <p className="mt-4 text-sm leading-7 text-neutral-400">
-                One clear price for trade ideas, simple notes, and a trade size
-                calculator.
-              </p>
-            </div>
-
-            <div className="mx-auto mt-14 grid max-w-5xl gap-5 md:grid-cols-2">
-              {/* SIGNALS $20/MO */}
-              <div className="relative flex flex-col justify-between overflow-hidden rounded-3xl border border-[#00D2B1]/30 bg-[#0D1312] p-8 sm:p-10">
-                <BorderTrace />
-
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-medium tracking-[.18em] text-[#00D2B1]">
-                      SIGNALS PLAN
-                    </span>
-                    <span className="rounded-full bg-[#00D2B1]/15 px-3 py-1 text-xs font-semibold text-[#00D2B1]">
-                      $20 / month
-                    </span>
-                  </div>
-
-                  <h3 className="mt-4 text-3xl font-medium tracking-tight text-white">
-                    Signals
-                  </h3>
-                  <p className="mt-3 text-sm leading-6 text-neutral-400">
-                    Get trade ideas for Forex, Crypto, and Gold with clear stop
-                    and profit levels.
-                  </p>
-
-                  <ul className="mt-8 space-y-4 border-t border-white/[0.07] pt-7 text-sm text-neutral-200">
-                    {[
-                      "Trade ideas with start, stop-loss, and profit levels",
-                      "Plain reasons explaining each trade idea",
-                      "Trade size calculator to help you risk safely",
-                      "Early access to the trading bot when it launches",
-                    ].map((feature) => (
-                      <li key={feature} className="flex items-center gap-3">
-                        <Check size={15} className="shrink-0 text-[#00D2B1]" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <a
-                  href="mailto:hello@earnrave.com?subject=EARNRAVE%20Signals%20(%2420%2Fmonth)"
-                  className="mt-9 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#00D2B1] text-sm font-medium text-[#04110E] transition hover:bg-[#4AE6CD] hover:shadow-[0_0_28px_rgba(0,210,177,0.2)]"
-                >
-                  Start Signals — $20/mo
-                  <ArrowUpRight size={15} />
-                </a>
-              </div>
-
-              {/* BOT COMING SOON CARD */}
-              <div className="flex flex-col justify-between rounded-3xl border border-white/[0.08] bg-[#0C0F0F] p-8 sm:p-10">
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-medium tracking-[.18em] text-neutral-500">
-                      AUTOMATION
-                    </span>
-                    <span className="rounded-full border border-[#00D2B1]/20 bg-[#00D2B1]/[0.06] px-3 py-1 text-[10px] font-medium text-[#00D2B1]">
-                      COMING SOON
-                    </span>
-                  </div>
-
-                  <h3 className="mt-4 text-3xl font-medium tracking-tight text-white">
-                    Trading Bot
-                  </h3>
-                  <p className="mt-3 text-sm leading-6 text-neutral-400">
-                    We are building a bot that can place trades for you based on
-                    your own safety rules.
-                  </p>
-
-                  <ul className="mt-8 space-y-4 border-t border-white/[0.06] pt-7 text-sm text-neutral-300">
-                    {[
-                      "Set your own max risk per trade",
-                      "Set a daily stop so losses stay capped",
-                      "Turn auto-trading on or off anytime",
-                      "Signals members get notified first when ready",
-                    ].map((feature) => (
-                      <li key={feature} className="flex items-center gap-3">
-                        <Check size={15} className="shrink-0 text-[#00D2B1]" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <a
-                  href="/education"
-                  className="mt-9 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-white/[0.12] bg-white/[0.03] text-sm font-medium text-white transition hover:border-[#00D2B1]/40 hover:bg-white/[0.06]"
-                >
-                  Learn basics in Education first
-                  <ArrowRight size={15} />
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* SLIDE-OUT DETAILS & TRADE SIZE CALCULATOR */}
-        <AnimatePresence>
-          {selectedIdea && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSelectedIdea(null)}
-              className="fixed inset-0 z-[100] flex items-center justify-end bg-black/75 backdrop-blur-sm"
-            >
-              <motion.div
-                initial={{ x: "100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "100%" }}
-                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                onClick={(e) => e.stopPropagation()}
-                className="flex h-full w-full max-w-lg flex-col justify-between overflow-y-auto border-l border-white/[0.1] bg-[#0B0E0E] p-6 sm:p-8"
-              >
-                <div>
-                  <div className="flex items-center justify-between border-b border-white/[0.07] pb-5">
-                    <div>
-                      <div className="flex items-center gap-2.5">
-                        <span className="font-mono text-xs text-neutral-500">
-                          {selectedIdea.id}
-                        </span>
-                        <span
-                          className={`rounded px-2 py-0.5 text-[10px] font-semibold ${
-                            selectedIdea.action === "BUY"
-                              ? "bg-[#00D2B1]/10 text-[#00D2B1]"
-                              : "bg-red-400/10 text-red-400"
-                          }`}
-                        >
-                          {selectedIdea.action}
-                        </span>
-                      </div>
-                      <h3 className="mt-2 text-2xl font-medium tracking-tight text-white">
-                        {selectedIdea.pair} Details
-                      </h3>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => setSelectedIdea(null)}
-                      className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.03] text-neutral-400 transition hover:text-white"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-
-                  <div className="mt-6 grid grid-cols-3 gap-3">
-                    <div className="rounded-xl border border-white/[0.06] bg-[#101414] p-3.5">
-                      <p className="text-[10px] text-neutral-500">START</p>
-                      <p className="mt-1.5 font-mono text-sm font-semibold text-white">
-                        {selectedIdea.entry}
-                      </p>
-                    </div>
-                    <div className="rounded-xl border border-white/[0.06] bg-[#101414] p-3.5">
-                      <p className="text-[10px] text-neutral-500">STOP LOSS</p>
-                      <p className="mt-1.5 font-mono text-sm font-semibold text-red-400">
-                        {selectedIdea.stopLoss}
-                      </p>
-                    </div>
-                    <div className="rounded-xl border border-white/[0.06] bg-[#101414] p-3.5">
-                      <p className="text-[10px] text-neutral-500">PROFIT GOAL</p>
-                      <p className="mt-1.5 font-mono text-sm font-semibold text-[#00D2B1]">
-                        {selectedIdea.takeProfit}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 space-y-4 rounded-2xl border border-white/[0.06] bg-[#101414] p-5">
-                    <div>
-                      <p className="text-[10px] font-medium tracking-[.15em] text-[#00D2B1]">
-                        WHY THIS TRADE
-                      </p>
-                      <p className="mt-2 text-xs leading-6 text-neutral-300">
-                        {selectedIdea.simpleReason}
-                      </p>
-                    </div>
-
-                    <div className="border-t border-white/[0.06] pt-3.5">
-                      <p className="text-[10px] font-medium tracking-[.15em] text-neutral-500">
-                        EXIT IF WRONG
-                      </p>
-                      <p className="mt-1.5 text-xs text-neutral-400">
-                        {selectedIdea.stopRule}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 rounded-2xl border border-[#00D2B1]/20 bg-[#00D2B1]/[0.03] p-5">
-                    <div className="flex items-center gap-2 text-xs font-medium text-[#00D2B1]">
-                      <Calculator size={15} />
-                      Trade Size Helper
-                    </div>
-
-                    <div className="mt-4 grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[10px] tracking-wider text-neutral-500">
-                          YOUR ACCOUNT ($)
-                        </label>
-                        <input
-                          type="number"
-                          value={accountBalance}
-                          onChange={(e) => setAccountBalance(e.target.value)}
-                          className="mt-1.5 w-full rounded-lg border border-white/[0.1] bg-[#0A0D0D] px-3 py-2 font-mono text-xs text-white outline-none focus:border-[#00D2B1]/50"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] tracking-wider text-neutral-500">
-                          RISK PER TRADE (%)
-                        </label>
-                        <input
-                          type="number"
-                          step="0.25"
-                          value={riskPercent}
-                          onChange={(e) => setRiskPercent(e.target.value)}
-                          className="mt-1.5 w-full rounded-lg border border-white/[0.1] bg-[#0A0D0D] px-3 py-2 font-mono text-xs text-white outline-none focus:border-[#00D2B1]/50"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="mt-4 grid grid-cols-3 gap-2 border-t border-white/[0.07] pt-4 text-xs">
-                      <div>
-                        <p className="text-[10px] text-neutral-500">
-                          MAX LOSS ($)
-                        </p>
-                        <p className="mt-1 font-mono font-semibold text-white">
-                          $
-                          {sizePlan.riskMoney.toLocaleString(undefined, {
-                            maximumFractionDigits: 0,
-                          })}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-neutral-500">
-                          TRADE SIZE
-                        </p>
-                        <p className="mt-1 font-mono font-semibold text-[#00D2B1]">
-                          {sizePlan.tradeSize}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-neutral-500">
-                          3X GAIN ($)
-                        </p>
-                        <p className="mt-1 font-mono font-semibold text-[#00D2B1]">
-                          +$
-                          {sizePlan.goalMoney.toLocaleString(undefined, {
-                            maximumFractionDigits: 0,
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-8 border-t border-white/[0.06] pt-5">
-                  <p className="text-[11px] leading-5 text-neutral-500">
-                    For learning and planning only. Always check your account
-                    balance and risk rules before placing a trade.
-                  </p>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <LazyLiveIdeasSection onSelectIdea={setSelectedIdea} />
+        <LazyExecutionModesSection />
+        <LazyPastResultsSection />
+        <LazyPricingSection />
+        <LazyTradeSizeDrawer
+          selectedIdea={selectedIdea}
+          onClose={() => setSelectedIdea(null)}
+        />
       </main>
 
       <Footer />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { motion } from "framer-motion";
 
 import { products } from "@/config/products";
@@ -8,24 +8,22 @@ import { useProduct } from "@/providers/ProductProvider";
 
 export default function ProductSwitcher() {
   const { product, setProduct } = useProduct();
-  const router = useRouter();
-
-  const handleProductChange = (item: (typeof products)[number]) => {
-    setProduct(item.id);
-    router.push(item.href);
-  };
 
   return (
-    <div className="flex items-center gap-1 rounded-2xl border border-white/[0.06] bg-[#0f1111] p-1">
+    <nav
+      aria-label="Product switcher"
+      className="flex items-center gap-1 rounded-2xl border border-white/[0.06] bg-[#0f1111] p-1"
+    >
       {products.map((item) => {
         const Icon = item.icon;
         const active = product === item.id;
 
         return (
-          <button
+          <Link
             key={item.id}
-            onClick={() => handleProductChange(item)}
-            aria-pressed={active}
+            href={item.href}
+            onClick={() => setProduct(item.id)}
+            aria-current={active ? "page" : undefined}
             className="relative flex h-11 items-center gap-2 rounded-xl px-4 text-sm transition-colors max-xl:px-3"
           >
             {active && (
@@ -56,9 +54,9 @@ export default function ProductSwitcher() {
             >
               {item.title}
             </span>
-          </button>
+          </Link>
         );
       })}
-    </div>
+    </nav>
   );
 }
