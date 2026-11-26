@@ -2,7 +2,7 @@ import {
   Brain,
   Radio,
   Rocket,
-  Lightbulb,
+  GraduationCap,
   type LucideIcon,
 } from "lucide-react";
 
@@ -23,7 +23,7 @@ export const products: ProductConfig[] = [
     title: "AI-Analytics",
     label: "AI-Analytics",
     icon: Brain,
-    href: "#/",
+    href: "/",
     description: "Understand your performance and identify your trading edge.",
   },
   {
@@ -31,7 +31,7 @@ export const products: ProductConfig[] = [
     title: "Signals",
     label: "Signals",
     icon: Radio,
-    href: "#signals",
+    href: "/signals",
     description: "Find structured trade opportunities and setups.",
   },
   {
@@ -39,15 +39,16 @@ export const products: ProductConfig[] = [
     title: "Funding",
     label: "Funding",
     icon: Rocket,
-    href: "#funding",
+    href: "/funding",
     description: "Prepare for prop firm challenges and manage risk.",
   },
   {
-    id: "insights",
-    title: "Insights",
-    label: "Insights",
-    icon: Lightbulb,
-    href: "#insights",
-    description: "Stay informed with market research and analysis.",
+    id: "education",
+    title: "Education",
+    label: "Education",
+    icon: GraduationCap,
+    href: "/education",
+    description:
+      "Weekly market outlooks, what to watch, and beginner trading lessons.",
   },
 ];

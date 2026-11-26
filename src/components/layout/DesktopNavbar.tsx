@@ -85,7 +85,7 @@ export default function DesktopNavbar() {
 
           {/* Secondary Navigation */}
           <div className="flex h-[56px] items-center justify-center gap-10">
-            {links.items.map((item) => (
+            {(links?.items ?? []).map((item) => (
               <a
                 key={item.label}
                 href={item.href}

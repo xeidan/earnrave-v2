@@ -42,7 +42,7 @@ export const navigation: Record<Product, ProductNavigation> = {
   },
 
   insights: {
-    product: "Insights",
+    product: "Education",
     items: [
       { label: "Market Overview", href: "#markets" },
       { label: "Research", href: "#research" },

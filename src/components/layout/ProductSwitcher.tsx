@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
 import { products } from "@/config/products";
@@ -7,6 +8,12 @@ import { useProduct } from "@/providers/ProductProvider";
 
 export default function ProductSwitcher() {
   const { product, setProduct } = useProduct();
+  const router = useRouter();
+
+  const handleProductChange = (item: (typeof products)[number]) => {
+    setProduct(item.id);
+    router.push(item.href);
+  };
 
   return (
     <div className="flex items-center gap-1 rounded-2xl border border-white/[0.06] bg-[#0f1111] p-1">
@@ -17,11 +24,10 @@ export default function ProductSwitcher() {
         return (
           <button
             key={item.id}
-            onClick={() => setProduct(item.id)}
+            onClick={() => handleProductChange(item)}
             aria-pressed={active}
             className="relative flex h-11 items-center gap-2 rounded-xl px-4 text-sm transition-colors max-xl:px-3"
           >
-            {/* Active background */}
             {active && (
               <motion.span
                 layoutId="product-pill"
@@ -34,7 +40,6 @@ export default function ProductSwitcher() {
               />
             )}
 
-            {/* Product icon */}
             <Icon
               size={17}
               className={`relative z-10 ${
@@ -42,7 +47,6 @@ export default function ProductSwitcher() {
               }`}
             />
 
-            {/* Product name */}
             <span
               className={`relative z-10 whitespace-nowrap ${
                 active

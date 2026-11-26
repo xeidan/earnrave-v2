@@ -423,83 +423,186 @@ useEffect(() => {
 
       <main className="min-h-screen overflow-hidden bg-[#080A0A] text-white">
         {/* HERO */}
-        <motion.section initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.12 }} transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }} className="relative px-5 lg:pb-10 pt-36 lg:pt-56">
-          <div className="mx-auto max-w-7xl">
-            <div className="grid items-end gap-12 md:grid-cols-[1.15fr_.85fr]">
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-              >
-                <div className="flex items-center gap-2 text-[11px] font-medium tracking-[.16em] text-[#00D2B1]">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#00D2B1]" />
-                  AI-POWERED TRADING ANALYTICS
-                </div>
+<motion.section
+  initial={{ opacity: 0, y: 16 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  viewport={{ once: true, amount: 0.12 }}
+  transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+  className="relative px-5 pt-36 lg:pb-10 lg:pt-56"
+>
+  <div className="mx-auto max-w-7xl">
+    <div className="grid items-end gap-12 md:grid-cols-[1.15fr_.85fr]">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="flex items-center gap-2 text-[11px] font-medium tracking-[.16em] text-[#00D2B1]">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#00D2B1]" />
+          AI-POWERED TRADING ANALYTICS
+        </div>
 
-                <h1 className="mt-8 max-w-3xl text-5xl font-bold leading-[1.04] tracking-[-.07em] sm:text-7xl lg:text-[88px]">
-                  Trade your edge.
-                  <br />
-                  <span className="text-neutral-500">Build Mastery.</span>
-                </h1>
+        <h1 className="mt-8 max-w-3xl text-5xl font-bold leading-[1.04] tracking-[-.07em] sm:text-7xl lg:text-[88px]">
+          Trade your edge.
+          <br />
+          <span className="text-neutral-500">Build Mastery.</span>
+        </h1>
 
-                <p className="mt-8 max-w-xl text-sm leading-8 text-neutral-400 sm:text-base">
-                  Find your edge. Understand your mistakes. Make better trading
-                  decisions with performance analytics and AI that goes beyond the
-                  numbers.
-                </p>
+        <p className="mt-8 max-w-xl text-sm leading-8 text-neutral-400 sm:text-base">
+          Find your edge. Understand your mistakes. Make better trading
+          decisions with performance analytics and AI that goes beyond the
+          numbers.
+        </p>
 
-                <div className="mt-10 flex flex-wrap items-center gap-4">
-                  <a
-                    href="#analytics"
-                    className="inline-flex h-12 items-center gap-2 rounded-lg bg-[#00D2B1] px-6 text-sm font-medium text-[#04110E] transition hover:bg-[#4AE6CD]"
-                  >
-                    Explore demo
-                    <ArrowUpRight size={15} />
-                  </a>
+        <div className="mt-10 flex flex-wrap items-center gap-4">
+          <a
+            href="#analytics"
+            className="inline-flex h-12 items-center gap-2 rounded-lg bg-[#00D2B1] px-6 text-sm font-medium text-[#04110E] transition hover:bg-[#4AE6CD]"
+          >
+            Explore demo
+            <ArrowUpRight size={15} />
+          </a>
 
-                  <a
-                    href="#ai-assistant"
-                    className="inline-flex h-12 items-center gap-2 rounded-lg border border-white/[0.12] px-6 text-sm text-neutral-300 transition hover:border-[#00D2B1]/40 hover:text-white"
-                  >
-                    Connect broker
-                    <ArrowRight size={15} />
-                  </a>
-                </div>
-              </motion.div>
+          <a
+            href="#ai-assistant"
+            className="inline-flex h-12 items-center gap-2 rounded-lg border border-white/[0.12] px-6 text-sm text-neutral-300 transition hover:border-[#00D2B1]/40 hover:text-white"
+          >
+            Connect broker
+            <ArrowRight size={15} />
+          </a>
+        </div>
+      </motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.6 }}
-                className="pb-3 md:pl-16"
-              >
-                <div className="border-l border-white/10 pl-6 py-2">
-                  <p className="text-xs tracking-wide text-neutral-500">
-                    BETTER TRADING STARTS WITH
-                  </p>
+      <motion.div
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.6 }}
+        className="pb-3 md:pl-16"
+      >
+        <div className="relative py-2 pl-6">
+          {/* Base vertical rail */}
+          <div className="pointer-events-none absolute bottom-0 left-0 top-0 w-px bg-white/10" />
 
-                  <div className="mt-6 space-y-5">
-                    {[
-                      ["01", "Finding your edge"],
-                      ["02", "Managing your risk"],
-                      ["03", "Improving discipline"],
-                      ["04", "Learning from feedback"],
-                    ].map(([num, label]) => (
-                      <div key={num} className="flex items-center gap-5">
-                        <span className="text-[10px] text-neutral-700">
-                          {num}
-                        </span>
-                        <span className="text-sm text-neutral-300">
-                          {label}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            </div>
+          {/* Moving glowing trace along the left border */}
+          <div className="pointer-events-none absolute bottom-0 left-0 top-0 w-px overflow-hidden">
+            <motion.div
+              className="h-16 w-px bg-gradient-to-b from-transparent via-[#00D2B1] to-transparent shadow-[0_0_12px_rgba(0,210,177,0.85)]"
+              animate={{ y: ["-64px", "260px"] }}
+              transition={{
+                duration: 6.4,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+            />
           </div>
-        </motion.section>
+
+          <p className="text-xs tracking-wide text-neutral-500">
+            BETTER TRADING STARTS WITH
+          </p>
+
+          <div className="mt-6 space-y-5">
+            {[
+              ["01", "Finding your edge"],
+              ["02", "Managing your risk"],
+              ["03", "Improving discipline"],
+              ["04", "Learning from feedback"],
+            ].map(([num, label], idx) => {
+              const phaseStart = idx * 0.22;
+              const phasePeak = Math.min(phaseStart + 0.08, 0.92);
+              const phaseEnd = Math.min(phaseStart + 0.2, 0.99);
+
+              return (
+                <div key={num} className="relative flex items-center gap-5">
+                  {/* Glowing node aligned on the left border */}
+                  <motion.span
+                    className="pointer-events-none absolute -left-[27.5px] h-1.5 w-1.5 rounded-full bg-[#00D2B1]"
+                    animate={{
+                      opacity: [0.18, 0.18, 1, 0.25, 0.18],
+                      scale: [1, 1, 1.45, 1, 1],
+                      boxShadow: [
+                        "0 0 0px rgba(0,210,177,0)",
+                        "0 0 0px rgba(0,210,177,0)",
+                        "0 0 10px rgba(0,210,177,0.95)",
+                        "0 0 3px rgba(0,210,177,0.2)",
+                        "0 0 0px rgba(0,210,177,0)",
+                      ],
+                    }}
+                    transition={{
+                      duration: 6.4,
+                      repeat: Infinity,
+                      times: [
+                        0,
+                        Math.max(0.01, phaseStart),
+                        phasePeak,
+                        phaseEnd,
+                        1,
+                      ],
+                      ease: "easeInOut",
+                    }}
+                  />
+
+                  <motion.span
+                    className="font-mono text-[10px]"
+                    animate={{
+                      color: [
+                        "#404040",
+                        "#404040",
+                        "#00D2B1",
+                        "#737373",
+                        "#404040",
+                      ],
+                    }}
+                    transition={{
+                      duration: 6.4,
+                      repeat: Infinity,
+                      times: [
+                        0,
+                        Math.max(0.01, phaseStart),
+                        phasePeak,
+                        phaseEnd,
+                        1,
+                      ],
+                      ease: "easeInOut",
+                    }}
+                  >
+                    {num}
+                  </motion.span>
+
+                  <motion.span
+                    className="text-sm"
+                    animate={{
+                      color: [
+                        "#D4D4D4",
+                        "#D4D4D4",
+                        "#FFFFFF",
+                        "#D4D4D4",
+                        "#D4D4D4",
+                      ],
+                    }}
+                    transition={{
+                      duration: 6.4,
+                      repeat: Infinity,
+                      times: [
+                        0,
+                        Math.max(0.01, phaseStart),
+                        phasePeak,
+                        phaseEnd,
+                        1,
+                      ],
+                      ease: "easeInOut",
+                    }}
+                  >
+                    {label}
+                  </motion.span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  </div>
+</motion.section>
 
         {/* ANALYTICS PRODUCT */}
         <motion.section id="analytics" initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.12 }} transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }} className="px-5 py-24 sm:py-28">
